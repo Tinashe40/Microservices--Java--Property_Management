@@ -11,10 +11,8 @@ This project is a utility library that provides common classes and functionaliti
 To get the project on your local machine, you can clone the repository using the following command:
 
 ```bash
-git clone https://github.com/your-username/property-management.git
+git clone https://github.com/Tinashe40/property-management.git
 ```
-
-*Note: Replace `https://github.com/your-username/property-management.git` with the actual URL of your repository.*
 
 ## Building
 

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+
 @FeignClient(name = "user-service")
 public interface UserClient {
 

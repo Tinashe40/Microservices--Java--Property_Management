@@ -1113,7 +1113,7 @@ APPLICATION FAILED TO START
 
 Description:
 
-Parameter 0 of constructor in com.proveritus.userservice.controllers.AuthController required a bean of type 'org.springframework.security.authentication.AuthenticationManager' that could not be found.
+Parameter 0 of constructor in com.proveritus.userservice.Auth.api.AuthRestController required a bean of type 'org.springframework.security.authentication.AuthenticationManager' that could not be found.
 
 
 Action:

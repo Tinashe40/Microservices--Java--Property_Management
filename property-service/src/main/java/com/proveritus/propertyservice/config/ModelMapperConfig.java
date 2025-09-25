@@ -1,9 +1,9 @@
 package com.proveritus.propertyservice.config;
 
-import com.proveritus.propertyservice.dto.FloorDTO;
-import com.proveritus.propertyservice.dto.UnitDTO;
-import com.proveritus.propertyservice.entity.Floor;
-import com.proveritus.propertyservice.entity.Unit;
+import com.proveritus.propertyservice.floor.dto.FloorDTO;
+import com.proveritus.propertyservice.unity.dto.UnitDTO;
+import com.proveritus.propertyservice.floor.domain.Floor;
+import com.proveritus.propertyservice.unity.domain.Unit;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;

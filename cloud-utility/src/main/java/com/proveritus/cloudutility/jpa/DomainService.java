@@ -5,15 +5,60 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
 
-public interface DomainService <T, C, U>{
-    T create(C createCommand);
+/**
+ * A generic service interface for CRUD operations.
+ *
+ * @param <T> The entity type.
+ * @param <C> The create DTO/command type.
+ * @param <U> The update DTO/command type.
+ * @param <D> The response DTO type.
+ */
+public interface DomainService<T, C, U extends Updatable, D> {
 
-    T update(U updateCommand);
+    /**
+     * Creates a new entity.
+     *
+     * @param createCommand The DTO/command for creation.
+     * @return The DTO of the created entity.
+     */
+    D create(C createCommand);
 
-    T findById(Long id);
+    /**
+     * Updates an existing entity.
+     *
+     * @param updateCommand The DTO/command for update.
+     * @return The DTO of the updated entity.
+     */
+    D update(U updateCommand);
 
-    Collection<T> findAll();
+    /**
+     * Finds an entity by its ID.
+     *
+     * @param id The ID of the entity.
+     * @return The DTO of the found entity.
+     */
+    D findById(Long id);
 
-    Page<T> findAll(Pageable pageable);
+    /**
+     * Finds all entities.
+     *
+     * @return A collection of DTOs.
+     */
+    Collection<D> findAll();
+
+    /**
+     * Finds all entities in a paginated way.
+     *
+     * @param pageable The pagination information.
+     * @return A page of DTOs.
+     */
+    Page<D> findAll(Pageable pageable);
+
+    /**
+     * Deletes an entity by its ID.
+     *
+     * @param id The ID of the entity to delete.
+     */
+    void deleteById(Long id);
 
 }

@@ -12,7 +12,6 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@ComponentScan(basePackages = {"com.proveritus.userservice", "com.proveritus.cloudutility.validator", "com.proveritus.cloudutility.security"})
 @OpenAPIDefinition(info = @Info(title = "User Service", version = "v1"))
 @SecurityScheme(
         name = "bearerAuth",
@@ -20,6 +19,7 @@ import org.springframework.context.annotation.ComponentScan;
         scheme = "bearer",
         in = SecuritySchemeIn.HEADER
 )
+@ComponentScan(basePackages = {"com.proveritus.userservice", "com.proveritus.cloudutility"})
 public class UserServiceApplication {
 
     public static void main(String[] args) {
