@@ -34,7 +34,7 @@ public interface PropertyRepository extends BaseDao<Property, Long> {
     boolean existsByName(String name);
 
     @Query("""
-            SELECT new com.proveritus.propertyservice.dto.PropertyStatsDTO(
+            SELECT new com.proveritus.propertyservice.property.dto.PropertyStatsDTO(
                 size(p.floors),
                 size(p.units),
                 SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END),

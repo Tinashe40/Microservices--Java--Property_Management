@@ -1,5 +1,6 @@
 package com.proveritus.propertyservice.unity.api;
 
+import com.proveritus.cloudutility.enums.OccupancyStatus;
 import com.proveritus.propertyservice.unity.dto.UnitDTO;
 import com.proveritus.propertyservice.unity.service.UnitService;
 import io.swagger.v3.oas.annotations.Operation;

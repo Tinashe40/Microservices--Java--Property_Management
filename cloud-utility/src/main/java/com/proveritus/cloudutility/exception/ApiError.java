@@ -53,6 +53,10 @@ public class ApiError {
         this.debugMessage = ex.getLocalizedMessage();
     }
 
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     private void addSubError(ApiSubError subError) {
         if (subErrors == null) {
             subErrors = new ArrayList<>();
@@ -102,13 +106,13 @@ public class ApiError {
         constraintViolations.forEach(this::addValidationError);
     }
 
-    interface ApiSubError {
+    public interface ApiSubError {
     }
 
     @Data
     @EqualsAndHashCode
     @AllArgsConstructor
-    static class ApiValidationError implements ApiSubError {
+    public static class ApiValidationError implements ApiSubError {
         private String object;
         private String field;
         private Object rejectedValue;

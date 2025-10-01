@@ -3,15 +3,15 @@ package com.proveritus.userservice.userManager.service.impl;
 import com.proveritus.cloudutility.dto.UserDTO;
 import com.proveritus.cloudutility.jpa.DomainServiceImpl;
 import com.proveritus.cloudutility.security.CustomPrincipal;
-import com.proveritus.cloudutility.validator.UserValidator;
 import com.proveritus.userservice.Auth.DTO.SignUpRequest;
 import com.proveritus.userservice.Auth.domain.User;
+import com.proveritus.cloudutility.exception.RegistrationException;
 import com.proveritus.userservice.userManager.domain.UserRepository;
 import com.proveritus.userservice.userManager.dto.UpdateUserDTO;
 import com.proveritus.userservice.userManager.mapper.UserMapper;
 import com.proveritus.userservice.userManager.service.UserService;
-import com.proveritus.userservice.userManager.userRoles.domain.Role;
-import com.proveritus.userservice.userManager.userRoles.domain.RoleRepository;
+import com.proveritus.userservice.userRoles.domain.Role;
+import com.proveritus.userservice.userRoles.domain.RoleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -19,10 +19,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,14 +31,12 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final UserValidator userValidator;
     private final RoleRepository roleRepository;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, UserValidator userValidator, RoleRepository roleRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, RoleRepository roleRepository) {
         super(userRepository, userMapper);
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-        this.userValidator = userValidator;
         this.roleRepository = roleRepository;
     }
 
@@ -46,18 +44,15 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
     public UserDTO registerUser(SignUpRequest signUpRequest) {
         log.debug("Request to register user : {}", signUpRequest.getUsername());
 
-        userValidator.validate(userMapper.toDto(signUpRequest), userRepository.existsByUsername(signUpRequest.getUsername()), userRepository.existsByEmail(signUpRequest.getEmail()));
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+            throw new RegistrationException("Username is already taken!");
+        }
+
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            throw new RegistrationException("Email is already in use!");
+        }
 
         User user = userMapper.fromCreateDto(signUpRequest);
-
-        Set<Role> roles = new HashSet<>();
-        if (signUpRequest.getRoles() == null || signUpRequest.getRoles().isEmpty()) {
-            roleRepository.findByName("VIEWER").ifPresent(roles::add);
-        } else {
-            signUpRequest.getRoles().forEach(roleName -> roleRepository.findByName(roleName.toUpperCase()).ifPresent(roles::add));
-        }
-        user.setRoles(roles);
-
         User savedUser = userRepository.save(user);
         log.debug("Saved user : {}", savedUser);
 
@@ -87,7 +82,7 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
     }
 
     @Override
-    @CacheEvict(value = "users", key = "#id")
+    @CacheEvict(value = "users", allEntries = true) // Evict all users cache on delete
     public void deleteUser(Long id) {
         log.debug("Request to delete User : {}", id);
         this.deleteById(id);
@@ -101,13 +96,17 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
     }
 
     @Override
-    @CacheEvict(value = "users", key = "#userId")
+    @CacheEvict(value = "users", allEntries = true) // Evict all users cache on role change
     public UserDTO assignRolesToUser(Long userId, Set<String> roleNames) {
         log.debug("Request to assign roles to user : {}", userId);
         User user = findEntityById(userId);
 
-        Set<Role> roles = new HashSet<>();
-        roleNames.forEach(roleName -> roleRepository.findByName(roleName.toUpperCase()).ifPresent(roles::add));
+        Set<String> upperCaseRoleNames = roleNames.stream().map(String::toUpperCase).collect(Collectors.toSet());
+        Set<Role> roles = roleRepository.findByNameIn(upperCaseRoleNames);
+
+        if (roles.size() != roleNames.size()) {
+            log.warn("Could not find all roles for user {}", userId);
+        }
         user.setRoles(roles);
 
         User result = userRepository.save(user);

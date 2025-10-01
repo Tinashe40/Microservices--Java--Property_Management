@@ -1,7 +1,7 @@
 package com.proveritus.userservice.Auth.domain;
 
 import com.proveritus.cloudutility.jpa.BaseEntity;
-import com.proveritus.userservice.userManager.userRoles.domain.Role;
+import com.proveritus.userservice.userRoles.domain.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

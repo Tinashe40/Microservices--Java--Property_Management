@@ -1,9 +1,9 @@
 package com.proveritus.propertyservice.property.api;
 
+import com.proveritus.cloudutility.enums.PropertyType;
 import com.proveritus.propertyservice.audit.annotation.Auditable;
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
 import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
-import com.proveritus.propertyservice.enums.PropertyType;
 import com.proveritus.propertyservice.property.service.PropertyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

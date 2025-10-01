@@ -7,6 +7,7 @@ import com.proveritus.propertyservice.floor.service.FloorService;
 import com.proveritus.propertyservice.property.domain.Property;
 import com.proveritus.cloudutility.exception.EntityNotFoundException;
 import com.proveritus.propertyservice.floor.domain.FloorRepository;
+import com.proveritus.cloudutility.enums.OccupancyStatus;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

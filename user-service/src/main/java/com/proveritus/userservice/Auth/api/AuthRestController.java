@@ -91,4 +91,19 @@ public class AuthRestController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         }
     }
+
+//    @GetMapping("/validate-token-and-get-roles")
+//    @Operation(summary = "Validates a JWT token and returns user roles")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Token is valid"),
+//            @ApiResponse(responseCode = "401", description = "Token is invalid")
+//    })
+//    public ResponseEntity<?> validateTokenAndGetRoles(@RequestParam String token) {
+//        if (tokenProvider.isTokenValid(token)) {
+//            Authentication authentication = tokenProvider.getAuthentication(token);
+//            return ResponseEntity.ok(authentication.getAuthorities());
+//        } else {
+//            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+//        }
+//    }
 }

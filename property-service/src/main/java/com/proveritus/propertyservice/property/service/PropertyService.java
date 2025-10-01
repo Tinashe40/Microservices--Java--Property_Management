@@ -2,7 +2,7 @@ package com.proveritus.propertyservice.property.service;
 
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
 import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
-import com.proveritus.propertyservice.enums.PropertyType;
+import com.proveritus.cloudutility.enums.PropertyType;
 import com.proveritus.cloudutility.exception.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

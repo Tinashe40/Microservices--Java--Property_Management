@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.property.domain;
 
 import com.proveritus.cloudutility.enums.PropertyType;
-import com.proveritus.propertyservice.entity.BaseEntity;
+import com.proveritus.cloudutility.jpa.BaseEntity;
 import com.proveritus.propertyservice.unity.domain.Unit;
 import com.proveritus.propertyservice.floor.domain.Floor;
 import jakarta.persistence.*;

@@ -2,8 +2,8 @@ package com.proveritus.userservice.config;
 
 import com.proveritus.userservice.Auth.domain.User;
 import com.proveritus.userservice.userManager.domain.UserRepository;
-import com.proveritus.userservice.userManager.userRoles.domain.Role;
-import com.proveritus.userservice.userManager.userRoles.domain.RoleRepository;
+import com.proveritus.userservice.userRoles.domain.Role;
+import com.proveritus.userservice.userRoles.domain.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;

@@ -15,12 +15,6 @@ import java.util.Collection;
  */
 public interface DomainService<T, C, U extends Updatable, D> {
 
-    /**
-     * Creates a new entity.
-     *
-     * @param createCommand The DTO/command for creation.
-     * @return The DTO of the created entity.
-     */
     D create(C createCommand);
 
     /**
