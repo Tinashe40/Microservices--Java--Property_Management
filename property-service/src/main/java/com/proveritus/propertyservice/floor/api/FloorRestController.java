@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@CrossOrigin
+
 @RequiredArgsConstructor
 @RequestMapping("/api/floors")
 @Tag(name = "Floors", description = "APIs for managing building floors")

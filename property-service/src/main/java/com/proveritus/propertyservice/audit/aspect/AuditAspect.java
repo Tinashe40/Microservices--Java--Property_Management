@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Aspect
-@Component
+@Component("propertyAuditAspect")
 @RequiredArgsConstructor
 public class AuditAspect {
 

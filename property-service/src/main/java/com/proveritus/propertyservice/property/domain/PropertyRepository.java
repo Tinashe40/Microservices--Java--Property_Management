@@ -50,7 +50,7 @@ public interface PropertyRepository extends BaseDao<Property, Long> {
             FROM Property p
             LEFT JOIN p.units u
             WHERE p.id = :id
-            GROUP BY p
+            GROUP BY p.id
             """)
     PropertyStatsDTO getPropertyStats(@Param("id") Long id);
 }

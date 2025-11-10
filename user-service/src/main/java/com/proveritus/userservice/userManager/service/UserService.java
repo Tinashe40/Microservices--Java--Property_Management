@@ -2,8 +2,8 @@ package com.proveritus.userservice.userManager.service;
 
 import com.proveritus.cloudutility.dto.UserDTO;
 import com.proveritus.cloudutility.jpa.DomainService;
-import com.proveritus.userservice.Auth.DTO.SignUpRequest;
-import com.proveritus.userservice.Auth.domain.User;
+import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
+import com.proveritus.userservice.auth.domain.User;
 import com.proveritus.userservice.userManager.dto.UpdateUserDTO;
 import java.util.List;
 import java.util.Optional;
@@ -25,4 +25,10 @@ public interface UserService extends DomainService<User, SignUpRequest, UpdateUs
     UserDTO assignRolesToUser(Long userId, Set<String> roleNames);
 
     void deleteUser(Long id);
+
+    void deactivateUser(Long id);
+
+    void changePassword(com.proveritus.userservice.userManager.dto.ChangePasswordRequest request);
+
+    void resetPassword(Long userId, com.proveritus.userservice.userManager.dto.ResetPasswordRequest request);
 }

@@ -13,12 +13,20 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PermissionServiceImpl extends DomainServiceImpl<Permission, PermissionDTO, PermissionDTO, PermissionDTO> implements PermissionService {
 
+    private final PermissionRepository repository;
+
     public PermissionServiceImpl(PermissionRepository repository, PermissionMapper mapper) {
         super(repository, mapper);
+        this.repository = repository;
     }
 
     @Override
     public Class<Permission> getEntityClass() {
         return Permission.class;
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        repository.deleteById(id);
     }
 }

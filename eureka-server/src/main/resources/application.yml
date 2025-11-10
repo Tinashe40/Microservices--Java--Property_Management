@@ -1,9 +1,38 @@
 spring:
   application:
-    name: EurekaServer
+    name: eureka-server
+
+  security:
+    basic:
+      enabled: false
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
 server:
   port: 8761
+
 eureka:
   client:
     register-with-eureka: false
-  fetch-registry: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  server:
+    wait-time-in-ms-when-sync-empty: 5
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.proveritus.eurekaserver: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate: INFO

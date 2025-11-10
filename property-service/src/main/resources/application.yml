@@ -1,7 +1,11 @@
 server:
   port: 8082
+  servlet:
+    context-path: /api
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
   application:
     name: property-service
   datasource:

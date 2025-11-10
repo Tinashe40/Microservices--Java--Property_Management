@@ -13,12 +13,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class RoleServiceImpl extends DomainServiceImpl<Role, RoleDTO, RoleDTO, RoleDTO> implements RoleService {
 
-    public RoleServiceImpl(RoleRepository repository, RoleMapper mapper) {
+    private final RoleRepository repository;
+
+    public RoleServiceImpl(RoleRepository repository,
+                           RoleMapper mapper) {
         super(repository, mapper);
+        this.repository = repository;
     }
 
     @Override
     public Class<Role> getEntityClass() {
         return Role.class;
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        repository.deleteById(id);
     }
 }

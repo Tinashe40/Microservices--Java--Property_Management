@@ -38,7 +38,7 @@ public abstract class RemoteUserDetailsService implements UserDetailsService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                "", // Password is not needed in this context
+                "",
                 authorities,
                 user.isEnabled(),
                 user.isAccountNonExpired(),

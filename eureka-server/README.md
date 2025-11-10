@@ -1,10 +1,10 @@
-# eureka-server
+# Eureka Server
 
-This service is part of the Property Management System.
+This service is a critical component of the Property Management System, providing service discovery capabilities to all microservices in the ecosystem.
 
 ## Description
 
-The Eureka Server is used for service discovery. All microservices register themselves with the Eureka Server, which allows them to find and communicate with each other without hardcoding hostnames and ports.
+The Eureka Server is a service registry that allows microservices to locate each other without hardcoding hostnames and ports. All services register themselves with the Eureka Server and send periodic heartbeats to renew their leases. This enables dynamic scaling, resilience, and simplifies the overall architecture.
 
 ## Getting Started
 
@@ -24,6 +24,8 @@ To build the service, run the following command from the service's root director
 mvn clean install
 ```
 
+This will compile the code, run the tests, and package the application into a JAR file.
+
 ## Running the Service
 
 After a successful build, you can run the service using:
@@ -40,9 +42,26 @@ Once the server is running, you can access the Eureka dashboard in your browser 
 
 **URL:** [http://localhost:8761/](http://localhost:8761/)
 
+## Actuator Endpoints
+
+This service uses Spring Boot Actuator to expose management and monitoring endpoints. The following endpoints are available:
+
+- **Health:** [http://localhost:8761/actuator/health](http://localhost:8761/actuator/health)
+- **Metrics:** [http://localhost:8761/actuator/metrics](http://localhost:8761/actuator/metrics)
+- **Prometheus:** [http://localhost:8761/actuator/prometheus](http://localhost:8761/actuator/prometheus)
+
 ## Configuration
 
-Configuration for the service can be found in `src/main/resources/application.yml`.
+Configuration for the service can be found in `src/main/resources/application.yml`. The following properties are configured:
+
+- **`spring.application.name`:** The name of the application.
+- **`server.port`:** The port on which the server will run.
+- **`eureka.client.register-with-eureka`:** Whether the server should register itself with Eureka.
+- **`eureka.client.fetch-registry`:** Whether the server should fetch the registry from Eureka.
+- **`eureka.server.wait-time-in-ms-when-sync-empty`:** The time to wait before sending a response when the registry is empty.
+- **`management.endpoints.web.exposure.include`:** Which actuator endpoints to expose.
+- **`management.endpoint.health.show-details`:** Whether to show details in the health endpoint.
+- **`logging.level.com.proveritus.eurekaserver`:** The logging level for the application.
 
 ## Collaboration
 

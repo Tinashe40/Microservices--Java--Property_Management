@@ -11,10 +11,13 @@ import com.proveritus.propertyservice.floor.domain.FloorRepository;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
 import com.proveritus.propertyservice.unity.domain.UnitRepository;
 import com.proveritus.propertyservice.floor.service.FloorService;
+import com.proveritus.propertyservice.unity.domain.UnitValidator;
 import com.proveritus.propertyservice.unity.service.UnitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,11 +36,13 @@ public class UnitServiceImpl implements UnitService {
     private final FloorRepository floorRepository;
     private final ModelMapper modelMapper;
     private final FloorService floorService;
+    private final UnitValidator unitValidator;
 
     @Override
+    @CacheEvict(value = "units", allEntries = true)
     public UnitDTO createUnit(UnitDTO unitDTO) {
         log.info("Creating new unit: {}", unitDTO.getName());
-        validateUnit(unitDTO, null);
+        unitValidator.validate(unitDTO, null);
 
         Property property = getPropertyById(unitDTO.getPropertyId());
         Floor floor = getFloorIfProvided(unitDTO.getFloorId());
@@ -57,21 +62,21 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "units", key = "#id")
     public UnitDTO getUnitById(Long id) {
         log.debug("Fetching unit with ID: {}", id);
-        return modelMapper.map(findUnitById(id), UnitDTO.class);
+        return unitRepository.findById(id)
+                .map(unit -> modelMapper.map(unit, UnitDTO.class))
+                .orElseThrow(() -> new EntityNotFoundException("Unit not found with id: " + id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public UnitDTO getUnitByNameAndPropertyId(String name, Long propertyId) {
         log.debug("Fetching unit with name: {} in property ID: {}", name, propertyId);
-        Unit unit = unitRepository.findByNameAndPropertyId(name, propertyId)
-                .orElseThrow(() -> {
-                    log.error("Unit not found with name: {} in property ID: {}", name, propertyId);
-                    return new EntityNotFoundException("Unit not found with name: " + name + " in property ID: " + propertyId);
-                });
-        return modelMapper.map(unit, UnitDTO.class);
+        return unitRepository.findByNameAndPropertyId(name, propertyId)
+                .map(unit -> modelMapper.map(unit, UnitDTO.class))
+                .orElseThrow(() -> new EntityNotFoundException("Unit not found with name: " + name + " in property ID: " + propertyId));
     }
 
     @Override
@@ -126,10 +131,11 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
+    @CacheEvict(value = "units", allEntries = true)
     public UnitDTO updateUnit(Long id, UnitDTO unitDTO) {
         log.info("Updating unit with ID: {}", id);
         Unit existingUnit = findUnitById(id);
-        validateUnit(unitDTO, id);
+        unitValidator.validate(unitDTO, id);
 
         Property property = getPropertyById(unitDTO.getPropertyId());
         Floor floor = getFloorIfProvided(unitDTO.getFloorId());
@@ -148,6 +154,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
+    @CacheEvict(value = "units", allEntries = true)
     public void deleteUnit(Long id) {
         log.info("Deleting unit with ID: {}", id);
         Unit unit = findUnitById(id);
@@ -160,6 +167,7 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
+    @CacheEvict(value = "units", allEntries = true)
     public UnitDTO updateOccupancyStatus(Long id, OccupancyStatus occupancyStatus, String tenant) {
         log.info("Updating occupancy status for unit ID: {} to {}", id, occupancyStatus);
         Unit unit = findUnitById(id);
@@ -215,50 +223,9 @@ public class UnitServiceImpl implements UnitService {
         }
     }
 
-    private void validateUnit(UnitDTO unitDTO, Long excludedUnitId) {
-        unitRepository.findByNameAndPropertyId(unitDTO.getName(), unitDTO.getPropertyId())
-                .ifPresent(existingUnit -> {
-                    if (!existingUnit.getId().equals(excludedUnitId)) {
-                        log.error("Unit with name {} already exists in property ID: {}",
-                                unitDTO.getName(), unitDTO.getPropertyId());
-                        throw new IllegalArgumentException("Unit with name " + unitDTO.getName() +
-                                " already exists in property with id: " + unitDTO.getPropertyId());
-                    }
-                });
-
-        // Basic validation
-        if (unitDTO.getName() == null || unitDTO.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Unit name cannot be empty");
-        }
-        if (unitDTO.getSize() != null && unitDTO.getSize() <= 0) {
-            throw new IllegalArgumentException("Unit size must be greater than 0");
-        }
-        if (unitDTO.getMonthlyRent() != null && unitDTO.getMonthlyRent() < 0) {
-            throw new IllegalArgumentException("Monthly rent cannot be negative");
-        }
-        if (unitDTO.getRentType() == RentType.PSM &&
-                unitDTO.getRatePerSqm() != null &&
-                unitDTO.getRatePerSqm() < 0) {
-            throw new IllegalArgumentException("Rate per square meter cannot be negative");
-        }
-
-        // Validate property existence
-        if (!propertyRepository.existsById(unitDTO.getPropertyId())) {
-            throw new EntityNotFoundException("Property not found with id: " + unitDTO.getPropertyId());
-        }
-
-        // Validate floor existence if provided
-        if (unitDTO.getFloorId() != null && !floorRepository.existsById(unitDTO.getFloorId())) {
-            throw new EntityNotFoundException("Floor not found with id: " + unitDTO.getFloorId());
-        }
-    }
-
     private Unit findUnitById(Long id) {
         return unitRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Unit not found with ID: {}", id);
-                    return new EntityNotFoundException("Unit not found with id: " + id);
-                });
+                .orElseThrow(() -> new EntityNotFoundException("Unit not found with id: " + id));
     }
 
     private Property getPropertyById(Long propertyId) {

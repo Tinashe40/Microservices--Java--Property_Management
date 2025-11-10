@@ -36,7 +36,7 @@ The service will start on port 8080 as configured in `src/main/resources/applica
 
 ## Routing
 
-The API Gateway routes requests to the downstream services based on the request path.
+The API Gateway routes requests to the downstream services based on the request path. The routes are configured in the `GatewayConfig` class.
 
 | Path Pattern                                       | Service Routed To  |
 |----------------------------------------------------|--------------------|
@@ -44,6 +44,14 @@ The API Gateway routes requests to the downstream services based on the request 
 | `/api/properties/**`, `/api/floors/**`, `/api/units/**` | `property-service` |
 
 The gateway also exposes the OpenAPI documentation for the services. You can access the Swagger UI at [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) to view and interact with the APIs of all the services.
+
+## Security
+
+The API Gateway includes a security filter that logs the headers of incoming requests. This can be extended to implement more complex security schemes.
+
+## Resilience
+
+The API Gateway uses Resilience4j to provide circuit breaker capabilities. This helps to prevent a single failing service from bringing down the entire system.
 
 ## Configuration
 

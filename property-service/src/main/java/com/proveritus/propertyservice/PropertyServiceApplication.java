@@ -9,16 +9,23 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients
+@EnableCaching
 @OpenAPIDefinition(info = @Info(title = "Property Service", version = "v1"))
 @SecurityScheme(
         name = "bearerAuth",
         type = SecuritySchemeType.HTTP,
         scheme = "bearer",
         in = SecuritySchemeIn.HEADER
+)
+@ComponentScan(
+        basePackages = {"com.proveritus.propertyservice", "com.proveritus.cloudutility"}
 )
 public class PropertyServiceApplication {
 

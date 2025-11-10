@@ -1,7 +1,7 @@
 package com.proveritus.userservice.userManager.mapper;
 
-import com.proveritus.userservice.Auth.DTO.SignUpRequest;
-import com.proveritus.userservice.Auth.domain.User;
+import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
+import com.proveritus.userservice.auth.domain.User;
 import com.proveritus.userservice.userRoles.mapper.RoleMapper;
 import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;

@@ -1,7 +1,7 @@
 package com.proveritus.userservice.userManager.mapper;
 
-import com.proveritus.userservice.Auth.DTO.SignUpRequest;
-import com.proveritus.userservice.Auth.domain.User;
+import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
+import com.proveritus.userservice.auth.domain.User;
 import com.proveritus.userservice.userRoles.domain.Role;
 import com.proveritus.userservice.userRoles.domain.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ public abstract class UserMapperDecorator implements UserMapper {
 
         Set<Role> roles = new HashSet<>();
         if (createDto.getRoles() == null || createDto.getRoles().isEmpty()) {
-            roleRepository.findByName("VIEWER").ifPresent(roles::add);
+            roleRepository.findByName("USER").ifPresent(roles::add);
         } else {
             createDto.getRoles().forEach(roleName -> roleRepository.findByName(roleName.toUpperCase()).ifPresent(roles::add));
         }

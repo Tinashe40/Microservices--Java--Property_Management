@@ -1,7 +1,7 @@
 package com.proveritus.userservice.userManager.service.impl;
 
 import com.proveritus.cloudutility.security.CustomPrincipal;
-import com.proveritus.userservice.Auth.domain.User;
+import com.proveritus.userservice.auth.domain.User;
 import com.proveritus.userservice.userManager.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +28,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
         log.debug("Loading user by username or email: {}", usernameOrEmail);
 
-        User user = userRepository.findByUsername(usernameOrEmail)
-                .orElseGet(() -> userRepository.findByEmail(usernameOrEmail)
+        User user = userRepository.findByUsernameAndDeletedFalse(usernameOrEmail)
+                .orElseGet(() -> userRepository.findByEmailAndDeletedFalse(usernameOrEmail)
                         .orElseThrow(() -> {
                             String errorMsg = "User not found with username or email: " + usernameOrEmail;
                             log.error(errorMsg);
@@ -55,7 +55,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private CustomPrincipal createPrincipal(User user) {
         List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .flatMap(role -> role.getPermissions().stream())
+                .map(permission -> new SimpleGrantedAuthority(permission.getName()))
                 .collect(Collectors.toList());
 
         return new CustomPrincipal(
