@@ -39,6 +39,7 @@ import java.util.Arrays;
 
 )
 
+@Import(BaseSecurityConfig.class)
 @RequiredArgsConstructor
 
 

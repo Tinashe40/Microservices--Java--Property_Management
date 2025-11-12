@@ -1,8 +1,8 @@
-package com.proveritus.propertyservice.unity.api;
+package com.proveritus.propertyservice.unit.api;
 
 import com.proveritus.cloudutility.enums.OccupancyStatus;
-import com.proveritus.propertyservice.unity.dto.UnitDTO;
-import com.proveritus.propertyservice.unity.service.UnitService;
+import com.proveritus.propertyservice.unit.dto.UnitDTO;
+import com.proveritus.propertyservice.unit.service.UnitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/units")
+@RequestMapping("/units")
 @RequiredArgsConstructor
 @Tag(name = "Units", description = "APIs for managing property units")
 public class UnitRestController {

@@ -19,6 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.proveritus.propertyservice.unit.domain.UnitRepository;
+import com.proveritus.cloudutility.enums.OccupancyStatus;
+import com.proveritus.propertyservice.property.dto.SystemStatsDTO;
+
 import java.util.ArrayList;
 
 @Slf4j
@@ -27,6 +31,7 @@ import java.util.ArrayList;
 @Transactional
 public class PropertyServiceImpl implements PropertyService {
     private final PropertyRepository propertyRepository;
+    private final UnitRepository unitRepository;
     private final ModelMapper modelMapper;
     private final PropertyValidator propertyValidator;
     private final UserEnrichmentService userEnrichmentService;
@@ -141,6 +146,28 @@ public class PropertyServiceImpl implements PropertyService {
     public long getTotalPropertiesCount() {
         log.debug("Fetching total properties count");
         return propertyRepository.countAllProperties();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SystemStatsDTO getSystemWideStats() {
+        log.debug("Fetching system-wide stats");
+
+        long totalProperties = propertyRepository.count();
+        long totalUnits = unitRepository.count();
+        long occupiedUnits = unitRepository.countByOccupancyStatus(OccupancyStatus.OCCUPIED);
+        double overallOccupancyRate = (totalUnits > 0) ? ((double) occupiedUnits / totalUnits) * 100 : 0;
+        double totalActualIncome = unitRepository.calculateTotalActualIncome();
+        double totalPotentialIncome = unitRepository.calculateTotalPotentialIncome();
+
+        return new SystemStatsDTO(
+                totalProperties,
+                totalUnits,
+                occupiedUnits,
+                overallOccupancyRate,
+                totalActualIncome,
+                totalPotentialIncome
+        );
     }
 
     private PropertyDTO convertToDto(Property property) {

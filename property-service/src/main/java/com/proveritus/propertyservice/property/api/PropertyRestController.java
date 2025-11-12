@@ -4,6 +4,7 @@ import com.proveritus.cloudutility.enums.PropertyType;
 import com.proveritus.propertyservice.audit.annotation.Auditable;
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
 import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
+import com.proveritus.propertyservice.property.dto.SystemStatsDTO;
 import com.proveritus.propertyservice.property.service.PropertyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,10 +24,10 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/properties")
+@RequestMapping("/properties")
 @RequiredArgsConstructor
 @Tag(name = "Properties", description = "APIs for managing properties")
-@SecurityRequirement(name = "bearAuth")
+@SecurityRequirement(name = "bearerAuth")
 public class PropertyRestController {
     private final PropertyService propertyService;
 
@@ -129,5 +130,15 @@ public class PropertyRestController {
     public ResponseEntity<Long> getPropertiesCount() {
         log.debug("Fetching properties count");
         return ResponseEntity.ok(propertyService.getTotalPropertiesCount());
+    }
+
+    @GetMapping("/stats/system-wide")
+    @Operation(summary = "Get system-wide statistics")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully")
+    })
+    public ResponseEntity<SystemStatsDTO> getSystemWideStats() {
+        log.debug("Fetching system-wide stats");
+        return ResponseEntity.ok(propertyService.getSystemWideStats());
     }
 }

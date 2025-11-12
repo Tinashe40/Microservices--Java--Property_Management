@@ -1,85 +1,99 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchWithAuth } from './apiClient';
+import { UserDTO } from './authService';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  // Add other user fields as needed
+export interface Page<T> {
+  content: T[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      sorted: boolean;
+      unsorted: boolean;
+      empty: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  sort: {
+    sorted: boolean;
+    unsorted: boolean;
+    empty: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
 }
 
-export const fetchUsers = async (): Promise<User[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/users`);
-  if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-  return response.json();
+export interface ChangePasswordRequest {
+  oldPassword?: string;
+  newPassword?: string;
+  confirmPassword?: string;
+}
+
+export interface ResetPasswordRequest {
+  newPassword?: string;
+  confirmPassword?: string;
+}
+
+export const fetchUsers = async (pageable: { page: number; size: number }): Promise<Page<UserDTO>> => {
+  const { page, size } = pageable;
+  return fetchWithAuth(`/api/users?page=${page}&size=${size}`);
 };
 
-export const useUsers = () => {
-  return useQuery<User[], Error>({ queryKey: ['users'], queryFn: fetchUsers });
+export const useUsers = (page: number, size: number) => {
+  return useQuery<Page<UserDTO>, Error>({
+    queryKey: ['users', page, size],
+    queryFn: () => fetchUsers({ page, size }),
+  });
 };
 
-export const fetchUserById = async (id: string): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/api/users/${id}`);
-  if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-  return response.json();
+export const fetchUserById = async (id: number): Promise<UserDTO> => {
+  return fetchWithAuth(`/api/users/${id}`);
 };
 
-export const useUserById = (id: string) => {
-  return useQuery<User, Error>({ queryKey: ['user', id], queryFn: () => fetchUserById(id) });
+export const useUserById = (id: number) => {
+  return useQuery<UserDTO, Error>({ queryKey: ['user', id], queryFn: () => fetchUserById(id) });
 };
 
-export const fetchUserByUsername = async (username: string): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/api/users/by-username?username=${username}`);
-  if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-  return response.json();
+export const fetchUserByUsername = async (username: string): Promise<UserDTO> => {
+  return fetchWithAuth(`/api/users/by-username?username=${username}`);
 };
 
 export const useUserByUsername = (username: string) => {
-  return useQuery<User, Error>({ queryKey: ['user', username], queryFn: () => fetchUserByUsername(username) });
+  return useQuery<UserDTO, Error>({
+    queryKey: ['user', username],
+    queryFn: () => fetchUserByUsername(username),
+  });
 };
 
-export const fetchUsersByIds = async (ids: string[]): Promise<User[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/users/by-ids`, {
+export const fetchUsersByIds = async (ids: number[]): Promise<UserDTO[]> => {
+  return fetchWithAuth(`/api/users/by-ids`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify(ids),
   });
-  if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-  return response.json();
 };
 
-export const useUsersByIds = (ids: string[]) => {
-  return useQuery<User[], Error>({ queryKey: ['users', ids], queryFn: () => fetchUsersByIds(ids) });
+export const useUsersByIds = (ids: number[]) => {
+  return useQuery<UserDTO[], Error>({ queryKey: ['users', ids], queryFn: () => fetchUsersByIds(ids) });
 };
 
-export const createUser = async (newUser: Omit<User, 'id'>): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/api/users`, {
+export const createUser = async (newUser: Omit<UserDTO, 'id'>): Promise<UserDTO> => {
+  return fetchWithAuth(`/api/users`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify(newUser),
   });
-  if (!response.ok) {
-    throw new Error('Failed to create user');
-  }
-  return response.json();
 };
 
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<UserDTO, Error, Omit<UserDTO, 'id'>>({
     mutationFn: createUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -87,23 +101,16 @@ export const useCreateUser = () => {
   });
 };
 
-export const updateUser = async (updatedUser: User): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/api/users/${updatedUser.id}`, {
+export const updateUser = async (updatedUser: UserDTO): Promise<UserDTO> => {
+  return fetchWithAuth(`/api/users/${updatedUser.id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify(updatedUser),
   });
-  if (!response.ok) {
-    throw new Error('Failed to update user');
-  }
-  return response.json();
 };
 
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<UserDTO, Error, UserDTO>({
     mutationFn: updateUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -111,18 +118,15 @@ export const useUpdateUser = () => {
   });
 };
 
-export const deleteUser = async (userId: string): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+export const deleteUser = async (userId: number): Promise<void> => {
+  return fetchWithAuth(`/api/users/${userId}`, {
     method: 'DELETE',
   });
-  if (!response.ok) {
-    throw new Error('Failed to delete user');
-  }
 };
 
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<void, Error, number>({
     mutationFn: deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -130,26 +134,61 @@ export const useDeleteUser = () => {
   });
 };
 
-export const assignRolesToUser = async ({ userId, roles }: { userId: string, roles: string[] }): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/api/users/${userId}/roles`, {
+export const assignRolesToUser = async ({ userId, roles }: { userId: number; roles: string[] }): Promise<UserDTO> => {
+  return fetchWithAuth(`/api/users/${userId}/roles`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify(roles),
   });
-  if (!response.ok) {
-    throw new Error('Failed to assign roles');
-  }
-  return response.json();
 };
 
 export const useAssignRolesToUser = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<UserDTO, Error, { userId: number; roles: string[] }>({
     mutationFn: assignRolesToUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
+  });
+};
+
+export const deactivateUser = async (userId: number): Promise<void> => {
+  return fetchWithAuth(`/api/users/${userId}/deactivate`, {
+    method: 'PUT',
+  });
+};
+
+export const useDeactivateUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, number>({
+    mutationFn: deactivateUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+};
+
+export const changePassword = async (request: ChangePasswordRequest): Promise<void> => {
+  return fetchWithAuth(`/api/users/change-password`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation<void, Error, ChangePasswordRequest>({
+    mutationFn: changePassword,
+  });
+};
+
+export const resetPassword = async ({ userId, request }: { userId: number; request: ResetPasswordRequest }): Promise<void> => {
+  return fetchWithAuth(`/api/users/${userId}/reset-password`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation<void, Error, { userId: number; request: ResetPasswordRequest }>({
+    mutationFn: resetPassword,
   });
 };

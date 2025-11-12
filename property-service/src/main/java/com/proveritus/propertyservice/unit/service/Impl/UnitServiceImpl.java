@@ -1,18 +1,18 @@
-package com.proveritus.propertyservice.unity.service.Impl;
+package com.proveritus.propertyservice.unit.service.Impl;
 
 import com.proveritus.cloudutility.enums.*;
-import com.proveritus.propertyservice.unity.dto.UnitDTO;
 import com.proveritus.propertyservice.floor.domain.Floor;
 import com.proveritus.propertyservice.property.domain.Property;
-import com.proveritus.propertyservice.unity.domain.Unit;
+import com.proveritus.propertyservice.unit.domain.Unit;
 import com.proveritus.cloudutility.enums.RentType;
 import com.proveritus.cloudutility.exception.EntityNotFoundException;
 import com.proveritus.propertyservice.floor.domain.FloorRepository;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
-import com.proveritus.propertyservice.unity.domain.UnitRepository;
+import com.proveritus.propertyservice.unit.domain.UnitRepository;
 import com.proveritus.propertyservice.floor.service.FloorService;
-import com.proveritus.propertyservice.unity.domain.UnitValidator;
-import com.proveritus.propertyservice.unity.service.UnitService;
+import com.proveritus.propertyservice.unit.domain.UnitValidator;
+import com.proveritus.propertyservice.unit.dto.UnitDTO;
+import com.proveritus.propertyservice.unit.service.UnitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -42,7 +42,7 @@ public class UnitServiceImpl implements UnitService {
     @CacheEvict(value = "units", allEntries = true)
     public UnitDTO createUnit(UnitDTO unitDTO) {
         log.info("Creating new unit: {}", unitDTO.getName());
-        unitValidator.validate(unitDTO, null);
+        unitValidator.validate(unitDTO);
 
         Property property = getPropertyById(unitDTO.getPropertyId());
         Floor floor = getFloorIfProvided(unitDTO.getFloorId());

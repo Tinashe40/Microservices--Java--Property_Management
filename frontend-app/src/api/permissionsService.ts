@@ -1,65 +1,20 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetchWithAuth } from './apiClient';
+import { Page } from './userService';
 
 export interface Permission {
-  id: string;
+  id: number;
   name: string;
 }
 
-export const fetchPermissions = async (): Promise<Permission[]> => {
-  return fetchWithAuth('/api/permissions');
+export const fetchPermissions = async (pageable: { page: number; size: number }): Promise<Page<Permission>> => {
+  const { page, size } = pageable;
+  return fetchWithAuth(`/api/permissions?page=${page}&size=${size}`);
 };
 
-export const usePermissions = () => {
-  return useQuery<Permission[], Error>({ queryKey: ['permissions'], queryFn: fetchPermissions });
-};
-
-export const createPermission = async (newPermission: Omit<Permission, 'id'>): Promise<Permission> => {
-  return fetchWithAuth('/api/permissions', {
-    method: 'POST',
-    body: JSON.stringify(newPermission),
-  });
-};
-
-export const useCreatePermission = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: createPermission,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['permissions'] });
-    },
-  });
-};
-
-export const updatePermission = async (updatedPermission: Permission): Promise<Permission> => {
-  return fetchWithAuth(`/api/permissions/${updatedPermission.id}`, {
-    method: 'PUT',
-    body: JSON.stringify(updatedPermission),
-  });
-};
-
-export const useUpdatePermission = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: updatePermission,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['permissions'] });
-    },
-  });
-};
-
-export const deletePermission = async (permissionId: string): Promise<void> => {
-  return fetchWithAuth(`/api/permissions/${permissionId}`, {
-    method: 'DELETE',
-  });
-};
-
-export const useDeletePermission = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: deletePermission,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['permissions'] });
-    },
+export const usePermissions = (page: number, size: number) => {
+  return useQuery<Page<Permission>, Error>({
+    queryKey: ['permissions', page, size],
+    queryFn: () => fetchPermissions({ page, size }),
   });
 };

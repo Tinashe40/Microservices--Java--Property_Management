@@ -9,7 +9,7 @@ spring:
   application:
     name: property-service
   datasource:
-    url: jdbc:mysql://localhost:3306/property_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/properties?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:sudo0047}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -38,6 +38,7 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: UTC
+    default-property-inclusion: non_null
   data:
     web:
       pageable:
@@ -74,6 +75,6 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   file:
-    name: logs/user-service.log
+    name: logs/property-service.log
   pattern:
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

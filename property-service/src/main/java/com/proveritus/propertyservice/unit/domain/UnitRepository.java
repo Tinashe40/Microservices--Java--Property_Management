@@ -1,4 +1,4 @@
-package com.proveritus.propertyservice.unity.domain;
+package com.proveritus.propertyservice.unit.domain;
 
 import com.proveritus.cloudutility.jpa.BaseDao;
 import com.proveritus.cloudutility.enums.*;
@@ -49,5 +49,13 @@ public interface UnitRepository extends BaseDao<Unit, Long> {
 
     @Query("SELECT COUNT(u) FROM Unit u WHERE u.property.id = :propertyId")
     long countByPropertyId(@Param("propertyId") Long propertyId);
+
+    long countByOccupancyStatus(OccupancyStatus occupancyStatus);
+
+    @Query("SELECT COALESCE(SUM(u.monthlyRent), 0) FROM Unit u WHERE u.occupancyStatus = 'OCCUPIED'")
+    Double calculateTotalActualIncome();
+
+    @Query("SELECT COALESCE(SUM(u.monthlyRent), 0) FROM Unit u")
+    Double calculateTotalPotentialIncome();
 
 }

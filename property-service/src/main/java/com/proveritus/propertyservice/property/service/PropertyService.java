@@ -4,6 +4,7 @@ import com.proveritus.propertyservice.property.dto.PropertyDTO;
 import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
 import com.proveritus.cloudutility.enums.PropertyType;
 import com.proveritus.cloudutility.exception.EntityNotFoundException;
+import com.proveritus.propertyservice.property.dto.SystemStatsDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -25,5 +26,7 @@ public interface PropertyService {
     PropertyStatsDTO getPropertyStats(Long id) throws EntityNotFoundException;
 
     long getTotalPropertiesCount();
+
+    SystemStatsDTO getSystemWideStats();
 }
 

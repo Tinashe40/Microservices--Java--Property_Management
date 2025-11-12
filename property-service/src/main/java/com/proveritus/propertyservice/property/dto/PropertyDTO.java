@@ -3,7 +3,7 @@ package com.proveritus.propertyservice.property.dto;
 import com.proveritus.propertyservice.floor.dto.FloorDTO;
 import com.proveritus.cloudutility.dto.UserDTO;
 import com.proveritus.cloudutility.enums.PropertyType;
-import com.proveritus.propertyservice.unity.dto.UnitDTO;
+import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import lombok.*;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.proveritus.propertyservice.unity.domain;
+package com.proveritus.propertyservice.unit.domain;
 
 import com.proveritus.cloudutility.enums.*;
 import com.proveritus.cloudutility.jpa.BaseEntity;

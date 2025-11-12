@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.floor.dto;
 
-import com.proveritus.propertyservice.unity.dto.UnitDTO;
+import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -19,6 +19,8 @@ public class FloorDTO {
 
     @NotBlank(message = "Floor name is required")
     private String name;
+    private String propertyType;
+    private String address;
 
     private Integer numberOfUnits;
     private Integer occupiedUnits;

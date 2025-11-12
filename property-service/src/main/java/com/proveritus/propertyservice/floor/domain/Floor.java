@@ -2,7 +2,7 @@ package com.proveritus.propertyservice.floor.domain;
 
 import com.proveritus.cloudutility.jpa.BaseEntity;
 import com.proveritus.propertyservice.property.domain.Property;
-import com.proveritus.propertyservice.unity.domain.Unit;
+import com.proveritus.propertyservice.unit.domain.Unit;
 import jakarta.persistence.*;
 import lombok.*;
 

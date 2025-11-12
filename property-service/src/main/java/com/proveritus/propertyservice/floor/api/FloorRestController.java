@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 
 @RequiredArgsConstructor
-@RequestMapping("/api/floors")
+@RequestMapping("/floors")
 @Tag(name = "Floors", description = "APIs for managing building floors")
 public class FloorRestController {
-    private final FloorService floorService = null;
+    private final FloorService floorService;
 
     @PostMapping
     @Operation(summary = "Create a new floor")

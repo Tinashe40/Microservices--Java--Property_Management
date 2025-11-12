@@ -1,7 +1,7 @@
-package com.proveritus.propertyservice.unity.service;
+package com.proveritus.propertyservice.unit.service;
 
 import com.proveritus.cloudutility.enums.OccupancyStatus;
-import com.proveritus.propertyservice.unity.dto.UnitDTO;
+import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import com.proveritus.cloudutility.exception.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

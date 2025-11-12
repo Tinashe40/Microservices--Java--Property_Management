@@ -1,10 +1,10 @@
-package com.proveritus.propertyservice.unity.domain;
+package com.proveritus.propertyservice.unit.domain;
 
 import com.proveritus.cloudutility.enums.RentType;
 import com.proveritus.cloudutility.exception.EntityNotFoundException;
 import com.proveritus.propertyservice.floor.domain.FloorRepository;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
-import com.proveritus.propertyservice.unity.dto.UnitDTO;
+import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,10 +16,14 @@ public class UnitValidator {
     private final PropertyRepository propertyRepository;
     private final FloorRepository floorRepository;
 
+    public void validate(UnitDTO unitDTO) {
+        validate(unitDTO, null);
+    }
+
     public void validate(UnitDTO unitDTO, Long excludedUnitId) {
         unitRepository.findByNameAndPropertyId(unitDTO.getName(), unitDTO.getPropertyId())
                 .ifPresent(existingUnit -> {
-                    if (!existingUnit.getId().equals(excludedUnitId)) {
+                    if (excludedUnitId == null || !existingUnit.getId().equals(excludedUnitId)) {
                         throw new IllegalArgumentException("Unit with name " + unitDTO.getName() +
                                 " already exists in property with id: " + unitDTO.getPropertyId());
                     }

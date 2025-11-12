@@ -1,4 +1,4 @@
-package com.proveritus.propertyservice.unity.dto;
+package com.proveritus.propertyservice.unit.dto;
 
 import com.proveritus.cloudutility.enums.*;
 

@@ -37,15 +37,15 @@ public interface PropertyRepository extends BaseDao<Property, Long> {
             SELECT new com.proveritus.propertyservice.property.dto.PropertyStatsDTO(
                 size(p.floors),
                 size(p.units),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.RESERVED THEN 1 ELSE 0 END),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.NOT_AVAILABLE THEN 1 ELSE 0 END),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.UNDER_MAINTENANCE THEN 1 ELSE 0 END),
-                (SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END) * 100.0) / size(p.units),
-                (SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END) * 100.0) / size(p.units),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN u.monthlyRent ELSE 0 END),
-                SUM(u.monthlyRent)
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.RESERVED THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.NOT_AVAILABLE THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.UNDER_MAINTENANCE THEN 1 ELSE 0 END), 0),
+                CASE WHEN size(p.units) > 0 THEN (COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END), 0) * 100.0) / size(p.units) ELSE 0.0 END,
+                CASE WHEN size(p.units) > 0 THEN (COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END), 0) * 100.0) / size(p.units) ELSE 0.0 END,
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN u.monthlyRent ELSE 0 END), 0.0),
+                COALESCE(SUM(u.monthlyRent), 0.0)
             )
             FROM Property p
             LEFT JOIN p.units u
