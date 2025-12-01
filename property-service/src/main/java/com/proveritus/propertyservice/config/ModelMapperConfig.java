@@ -39,8 +39,6 @@ public class ModelMapperConfig {
         // Configure Floor to FloorDTO mapping
         modelMapper.typeMap(Floor.class, FloorDTO.class).addMappings(mapper -> {
             mapper.map(src -> src.getProperty().getId(), FloorDTO::setPropertyId);
-            mapper.map(src -> src.getProperty().getPropertyType(), FloorDTO::setPropertyType);
-            mapper.map(src -> src.getProperty().getAddress(), FloorDTO::setAddress);
         });
 
         return modelMapper;

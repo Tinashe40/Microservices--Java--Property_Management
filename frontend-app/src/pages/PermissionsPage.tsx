@@ -1,53 +1,61 @@
 import React, { useState } from 'react';
-import { Typography, Container, CircularProgress, Grid, Card, CardContent, Alert, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
-import { usePermissions, useCreatePermission, useUpdatePermission, useDeletePermission } from '../api/permissionsService';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import {
+  Typography,
+  Container,
+  CircularProgress,
+  Alert,
+  TablePagination,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from '@mui/material';
+import { usePermissions, useCreatePermission } from '../api/permissionsService';
 
 const PermissionsPage = () => {
-  const { data, isLoading, isError, error } = usePermissions();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const { data, isLoading, isError, error } = usePermissions(page, rowsPerPage);
   const createPermission = useCreatePermission();
-  const updatePermission = useUpdatePermission();
-  const deletePermission = useDeletePermission();
 
   const [open, setOpen] = useState(false);
-  const [selectedPermission, setSelectedPermission] = useState<any>(null);
   const [name, setName] = useState('');
-  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  const [permissionToDelete, setPermissionToDelete] = useState<string | null>(null);
 
-  const handleClickOpen = (permission: any) => {
-    setSelectedPermission(permission);
-    setName(permission ? permission.name : '');
+  const handleClickOpen = () => {
+    setName('');
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
-    setSelectedPermission(null);
-    setName('');
+    createPermission.reset();
   };
 
   const handleSave = () => {
-    if (selectedPermission) {
-      updatePermission.mutate({ ...selectedPermission, name });
-    } else {
-      createPermission.mutate({ name });
-    }
-    handleClose();
+    createPermission.mutate({ name }, {
+      onSuccess: handleClose,
+    });
   };
 
-  const handleDelete = (id: string) => {
-    setPermissionToDelete(id);
-    setDeleteConfirmationOpen(true);
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
   };
 
-  const confirmDelete = () => {
-    if (permissionToDelete) {
-      deletePermission.mutate(permissionToDelete);
-      setPermissionToDelete(null);
-    }
-    setDeleteConfirmationOpen(false);
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   if (isLoading) {
@@ -62,43 +70,63 @@ const PermissionsPage = () => {
   if (isError) {
     return (
       <Container>
-        <Alert severity="error">Error loading permissions: {error?.message}</Alert>
+        <Alert severity="error">
+          Error loading permissions: {error?.message}
+        </Alert>
       </Container>
     );
   }
 
   return (
     <Container>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Permissions
-      </Typography>
-      <Button variant="contained" onClick={() => handleClickOpen(null)} sx={{ mb: 2 }}>
-        Create Permission
-      </Button>
-      {data && data.length > 0 ? (
-        <Grid container spacing={3}>
-          {data.map((permission) => (
-            <Grid key={permission.id} item xs={12} sm={6} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">{permission.name}</Typography>
-                  <IconButton edge="end" aria-label="edit" onClick={() => handleClickOpen(permission)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(permission.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Permissions
+        </Typography>
+        <Button variant="contained" onClick={handleClickOpen}>
+          Create Permission
+        </Button>
+      </Box>
+      {data && data.content.length > 0 ? (
+        <>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Permission Name</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.content.map((permission) => (
+                  <TableRow key={permission.id}>
+                    <TableCell component="th" scope="row">
+                      {permission.name}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            component="div"
+            count={data.totalElements}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </>
       ) : (
         <Typography>No permissions found.</Typography>
       )}
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{selectedPermission ? 'Edit Permission' : 'Create Permission'}</DialogTitle>
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+        <DialogTitle>Create New Permission</DialogTitle>
         <DialogContent>
+          {createPermission.isError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {createPermission.error?.message}
+            </Alert>
+          )}
           <TextField
             autoFocus
             margin="dense"
@@ -106,28 +134,15 @@ const PermissionsPage = () => {
             label="Permission Name"
             type="text"
             fullWidth
-            variant="standard"
+            variant="outlined"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSave}>Save</Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={deleteConfirmationOpen}
-        onClose={() => setDeleteConfirmationOpen(false)}
-      >
-        <DialogTitle>Confirm Deletion</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to delete this permission?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmationOpen(false)}>Cancel</Button>
-          <Button onClick={confirmDelete} color="error">
-            Delete
+          <Button onClick={handleSave} variant="contained" disabled={createPermission.isPending}>
+            {createPermission.isPending ? <CircularProgress size={24} /> : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>

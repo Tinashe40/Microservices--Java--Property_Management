@@ -7,12 +7,17 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Data
 public class UnitDTO {
+
+    private Long id;
 
     @NotBlank(message = "Unit name is required")
     private String name;
@@ -31,6 +36,14 @@ public class UnitDTO {
     private OccupancyStatus occupancyStatus;
 
     private String tenant;
+
+    private String tenantEmail;
+
+    private String tenantPhone;
+
+    private LocalDate leaseStartDate;
+
+    private LocalDate leaseEndDate;
 
     @NotNull(message = "Property ID is required")
     private Long propertyId;

@@ -37,6 +37,13 @@ public class UserRestController {
         return ResponseEntity.ok(userService.findAll(pageable));
     }
 
+    @GetMapping("/count")
+    @PreAuthorize("hasAuthority('user:read')")
+    @Operation(summary = "Get total number of users")
+    public ResponseEntity<Long> getUsersCount() {
+        return ResponseEntity.ok(userService.countAllUsers());
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('user:read') or @userServiceImpl.isCurrentUser(#id)")
     @Operation(summary = "Get user by ID")
@@ -121,6 +128,18 @@ public class UserRestController {
     })
     public ResponseEntity<Void> deactivateUser(@Parameter(description = "ID of the user to deactivate") @PathVariable Long id) {
         userService.deactivateUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/activate")
+    @PreAuthorize("hasAuthority('user:update')")
+    @Operation(summary = "Activate a user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User activated successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<Void> activateUser(@Parameter(description = "ID of the user to activate") @PathVariable Long id) {
+        userService.activateUser(id);
         return ResponseEntity.noContent().build();
     }
 

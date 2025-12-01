@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchWithAuth } from './apiClient';
-import { UserDTO } from './authService';
+import { SignUpRequest, UserDTO } from './authService';
 
 export interface Page<T> {
   content: T[];
@@ -84,7 +84,7 @@ export const useUsersByIds = (ids: number[]) => {
   return useQuery<UserDTO[], Error>({ queryKey: ['users', ids], queryFn: () => fetchUsersByIds(ids) });
 };
 
-export const createUser = async (newUser: Omit<UserDTO, 'id'>): Promise<UserDTO> => {
+export const createUser = async (newUser: SignUpRequest): Promise<UserDTO> => {
   return fetchWithAuth(`/api/users`, {
     method: 'POST',
     body: JSON.stringify(newUser),
@@ -93,7 +93,7 @@ export const createUser = async (newUser: Omit<UserDTO, 'id'>): Promise<UserDTO>
 
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
-  return useMutation<UserDTO, Error, Omit<UserDTO, 'id'>>({
+  return useMutation<UserDTO, Error, SignUpRequest>({
     mutationFn: createUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -112,8 +112,10 @@ export const useUpdateUser = () => {
   const queryClient = useQueryClient();
   return useMutation<UserDTO, Error, UserDTO>({
     mutationFn: updateUser,
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['user', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     },
   });
 };
@@ -167,6 +169,22 @@ export const useDeactivateUser = () => {
   });
 };
 
+export const activateUser = async (userId: number): Promise<void> => {
+  return fetchWithAuth(`/api/users/${userId}/activate`, {
+    method: 'PUT',
+  });
+};
+
+export const useActivateUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, number>({
+    mutationFn: activateUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+};
+
 export const changePassword = async (request: ChangePasswordRequest): Promise<void> => {
   return fetchWithAuth(`/api/users/change-password`, {
     method: 'POST',
@@ -190,5 +208,16 @@ export const resetPassword = async ({ userId, request }: { userId: number; reque
 export const useResetPassword = () => {
   return useMutation<void, Error, { userId: number; request: ResetPasswordRequest }>({
     mutationFn: resetPassword,
+  });
+};
+
+export const getUsersCount = async (): Promise<number> => {
+  return fetchWithAuth(`/api/users/count`);
+};
+
+export const useUsersCount = () => {
+  return useQuery<number, Error>({
+    queryKey: ['usersCount'],
+    queryFn: getUsersCount,
   });
 };

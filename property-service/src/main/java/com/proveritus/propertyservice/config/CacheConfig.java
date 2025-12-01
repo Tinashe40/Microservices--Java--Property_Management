@@ -13,7 +13,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("properties", "floors", "units");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("properties", "floors", "units", "propertyStats", "systemStats");
         cacheManager.setCaffeine(caffeineCacheBuilder());
         return cacheManager;
     }

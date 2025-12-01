@@ -38,7 +38,7 @@ public interface UnitRepository extends BaseDao<Unit, Long> {
             "(:occupancyStatus IS NULL OR u.occupancyStatus = :occupancyStatus)")
     Page<Unit> findWithFilters(@Param("propertyId") Long propertyId,
                                @Param("floorId") Long floorId,
-                               @Param("occupancy") OccupancyStatus occupancyStatus,
+                               @Param("occupancyStatus") OccupancyStatus occupancyStatus,
                                Pageable pageable);
 
     @Query("SELECT u FROM Unit u WHERE " + "LOWER(u.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " + "LOWER(u.tenant) LIKE LOWER(CONCAT('%', :query, '%'))")

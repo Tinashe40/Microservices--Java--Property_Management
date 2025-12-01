@@ -1,12 +1,19 @@
 import { QueryClient } from '@tanstack/react-query';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
 export const queryClient = new QueryClient();
 
 const getAuthToken = () => {
     return sessionStorage.getItem('token');
 };
+
+export class ApiError extends Error {
+    constructor(public status: number, message: string) {
+        super(message);
+        this.name = 'ApiError';
+    }
+}
 
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     const token = getAuthToken();
@@ -26,10 +33,17 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 
     if (!response.ok) {
         if (response.status === 401) {
-            // Unauthorized, redirect to login
+            sessionStorage.removeItem('token');
             window.location.href = '/login';
         }
-        throw new Error('Request failed');
+        
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.message || response.statusText;
+        throw new ApiError(response.status, errorMessage);
+    }
+
+    if (response.status === 204) {
+        return null;
     }
 
     return response.json();

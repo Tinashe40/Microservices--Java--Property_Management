@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,6 +36,7 @@ public class UserEnrichmentService {
     public Page<PropertyDTO> enrichPropertiesWithUserDetails(Page<Property> properties, Page<PropertyDTO> propertyDTOs) {
         List<Long> userIds = properties.getContent().stream()
                 .map(Property::getManagedBy)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         if (userIds.isEmpty()) {

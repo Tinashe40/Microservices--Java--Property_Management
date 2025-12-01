@@ -31,5 +31,7 @@ public class SignUpRequest {
     @NotBlank
     private String lastName;
 
+    private String phoneNumber;
+
     private Set<String> roles;
 }

@@ -14,12 +14,12 @@ import java.util.List;
 @FeignClient(name = "user-service")
 public interface UserClient {
 
-    @GetMapping("/api/users/{id}")
+    @GetMapping("/users/{id}")
     UserDTO getUserById(@PathVariable("id") Long id);
 
-    @GetMapping("/api/users/by-username")
+    @GetMapping("/users/by-username")
     UserDTO getUserByUsername(@RequestParam("username") String username);
 
-    @PostMapping("/api/users/by-ids")
+    @PostMapping("/users/by-ids")
     List<UserDTO> getUsersByIds(@RequestBody List<Long> ids);
 }

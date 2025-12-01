@@ -24,18 +24,13 @@ public abstract class UserMapperDecorator implements UserMapper {
     private RoleRepository roleRepository;
 
     @Override
-    public User fromCreateDto(SignUpRequest createDto) {
-        User user = delegate.fromCreateDto(createDto);
-        user.setPassword(passwordEncoder.encode(createDto.getPassword()));
-
-        Set<Role> roles = new HashSet<>();
-        if (createDto.getRoles() == null || createDto.getRoles().isEmpty()) {
-            roleRepository.findByName("USER").ifPresent(roles::add);
-        } else {
-            createDto.getRoles().forEach(roleName -> roleRepository.findByName(roleName.toUpperCase()).ifPresent(roles::add));
+    public com.proveritus.cloudutility.dto.UserDTO toDto(User user) {
+        com.proveritus.cloudutility.dto.UserDTO userDTO = delegate.toDto(user);
+        if (user.getRoles() != null) {
+            Set<String> permissions = new HashSet<>();
+            user.getRoles().forEach(role -> role.getPermissions().forEach(permission -> permissions.add(permission.getName())));
+            userDTO.setPermissions(permissions);
         }
-        user.setRoles(roles);
-
-        return user;
+        return userDTO;
     }
 }

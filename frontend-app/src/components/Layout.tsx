@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, CssBaseline } from '@mui/material';
+import { Box, CssBaseline, Toolbar } from '@mui/material';
 import Sidebar from './Sidebar';
 import { Outlet } from 'react-router-dom';
 
@@ -7,7 +7,11 @@ const drawerWidth = 240;
 
 const Layout = () => {
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ 
+      display: 'flex', 
+      minHeight: '100vh', 
+      bgcolor: 'background.default',
+    }}>
       <CssBaseline />
       <Sidebar drawerWidth={drawerWidth} />
       <Box
@@ -16,9 +20,9 @@ const Layout = () => {
           flexGrow: 1,
           p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
         }}
       >
+        <Toolbar />
         <Outlet />
       </Box>
     </Box>

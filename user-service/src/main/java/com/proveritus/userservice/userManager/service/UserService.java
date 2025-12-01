@@ -28,7 +28,11 @@ public interface UserService extends DomainService<User, SignUpRequest, UpdateUs
 
     void deactivateUser(Long id);
 
+    void activateUser(Long id);
+
     void changePassword(com.proveritus.userservice.userManager.dto.ChangePasswordRequest request);
 
     void resetPassword(Long userId, com.proveritus.userservice.userManager.dto.ResetPasswordRequest request);
+
+    long countAllUsers();
 }

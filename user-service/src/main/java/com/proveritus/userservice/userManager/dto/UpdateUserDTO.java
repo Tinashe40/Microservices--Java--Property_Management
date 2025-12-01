@@ -13,6 +13,7 @@ public class UpdateUserDTO implements Updatable {
     private String email;
     private String firstName;
     private String lastName;
+    private String phoneNumber;
     private boolean enabled;
     private boolean accountNonExpired;
     private boolean accountNonLocked;

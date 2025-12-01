@@ -30,8 +30,8 @@ public abstract class RemoteUserDetailsService implements UserDetailsService {
     }
 
     private CustomPrincipal createPrincipal(UserDTO user) {
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+        List<GrantedAuthority> authorities = user.getPermissions().stream()
+                .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
         return new CustomPrincipal(

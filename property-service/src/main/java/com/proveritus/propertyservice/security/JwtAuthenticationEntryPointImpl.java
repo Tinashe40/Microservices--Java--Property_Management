@@ -1,6 +1,7 @@
 package com.proveritus.propertyservice.security;
 
 import com.proveritus.cloudutility.security.JwtAuthenticationEntryPoint;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;

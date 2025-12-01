@@ -1,6 +1,8 @@
 package com.proveritus.propertyservice.unit.api;
 
+import com.proveritus.cloudutility.security.Permissions;
 import com.proveritus.cloudutility.enums.OccupancyStatus;
+
 import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import com.proveritus.propertyservice.unit.service.UnitService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +18,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -27,6 +32,7 @@ public class UnitRestController {
     private final UnitService unitService;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('unit:create')")
     @Operation(summary = "Create a new unit")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Unit created successfully"),
@@ -41,6 +47,7 @@ public class UnitRestController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('unit:read', 'leasing_agent:read', 'maintenance_staff:read')")
     @Operation(summary = "Get a unit by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unit found"),
@@ -53,6 +60,7 @@ public class UnitRestController {
     }
 
     @GetMapping("/name/{name}")
+    @PreAuthorize("hasAnyAuthority('unit:read', 'leasing_agent:read', 'maintenance_staff:read')")
     @Operation(summary = "Get a unit by name and property ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unit found"),
@@ -66,6 +74,7 @@ public class UnitRestController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('unit:read', 'leasing_agent:read', 'maintenance_staff:read')")
     @Operation(summary = "Get units with filtering and pagination")
     public ResponseEntity<?> getUnits(
             @RequestParam(required = false) Long propertyId,
@@ -99,6 +108,7 @@ public class UnitRestController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('unit:update')")
     @Operation(summary = "Update an existing unit")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unit updated successfully"),
@@ -113,6 +123,7 @@ public class UnitRestController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('unit:delete')")
     @Operation(summary = "Delete a unit by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Unit deleted successfully"),
@@ -125,7 +136,35 @@ public class UnitRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/bulk-create")
+    @PreAuthorize("hasAuthority('unit:create')")
+    @Operation(summary = "Create multiple units")
+    public ResponseEntity<Void> createUnits(@Valid @RequestBody List<UnitDTO> unitDTOs) {
+        log.info("Creating {} units", unitDTOs.size());
+        unitService.createUnits(unitDTOs);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PutMapping("/bulk-update")
+    @PreAuthorize("hasAuthority('unit:update')")
+    @Operation(summary = "Update multiple units")
+    public ResponseEntity<Void> updateUnits(@Valid @RequestBody List<UnitDTO> unitDTOs) {
+        log.info("Updating {} units", unitDTOs.size());
+        unitService.updateUnits(unitDTOs);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/bulk-delete")
+    @PreAuthorize("hasAuthority('unit:delete')")
+    @Operation(summary = "Delete multiple units")
+    public ResponseEntity<Void> deleteUnits(@RequestBody List<Long> ids) {
+        log.info("Deleting {} units", ids.size());
+        unitService.deleteUnits(ids);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{id}/occupancy")
+    @PreAuthorize("hasAnyAuthority('unit:update', 'leasing_agent:update_occupancy')")
     @Operation(summary = "Update unit occupancy status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Occupancy status updated successfully"),
@@ -140,6 +179,7 @@ public class UnitRestController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyAuthority('unit:read', 'leasing_agent:read', 'maintenance_staff:read')")
     @Operation(summary = "Search units by name or tenant")
     public ResponseEntity<?> searchUnits(
             @RequestParam String query,
@@ -157,6 +197,7 @@ public class UnitRestController {
     }
 
     @GetMapping("/property/{propertyId}/income")
+    @PreAuthorize("hasAuthority('unit:read')")
     @Operation(summary = "Calculate potential rental income for a property")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Income calculated successfully"),
@@ -169,6 +210,7 @@ public class UnitRestController {
     }
 
     @GetMapping("/property/{propertyId}/count")
+    @PreAuthorize("hasAuthority('unit:read')")
     @Operation(summary = "Count units in a property")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Count retrieved successfully"),

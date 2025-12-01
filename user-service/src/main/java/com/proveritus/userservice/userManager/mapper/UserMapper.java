@@ -11,7 +11,18 @@ import org.mapstruct.MappingTarget;
 @DecoratedWith(UserMapperDecorator.class)
 public interface UserMapper extends com.proveritus.cloudutility.jpa.EntityDtoMapper<com.proveritus.cloudutility.dto.UserDTO, User, SignUpRequest, com.proveritus.userservice.userManager.dto.UpdateUserDTO> {
 
+    @org.mapstruct.Mapping(target = "id", source = "id")
+    @org.mapstruct.Mapping(target = "username", source = "username")
+    @org.mapstruct.Mapping(target = "email", source = "email")
+    @org.mapstruct.Mapping(target = "firstName", source = "firstName")
+    @org.mapstruct.Mapping(target = "lastName", source = "lastName")
+    @org.mapstruct.Mapping(target = "phoneNumber", source = "phoneNumber")
     @org.mapstruct.Mapping(target = "roles", source = "roles")
+    @org.mapstruct.Mapping(target = "enabled", source = "enabled")
+    @org.mapstruct.Mapping(target = "accountNonExpired", source = "accountNonExpired")
+    @org.mapstruct.Mapping(target = "accountNonLocked", source = "accountNonLocked")
+    @org.mapstruct.Mapping(target = "credentialsNonExpired", source = "credentialsNonExpired")
+    @org.mapstruct.Mapping(target = "permissions", ignore = true)
     com.proveritus.cloudutility.dto.UserDTO toDto(User user);
 
     @org.mapstruct.Mapping(target = "id", ignore = true)

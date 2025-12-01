@@ -6,40 +6,17 @@ spring:
     name: api-gateway
   cloud:
     gateway:
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins: "http://localhost:3000"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - PATCH
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: true
       discovery:
         locator:
           enabled: true
           lower-case-service-id: true
-      routes:
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/api/users/**, /api/auth/**, /api/roles/**, /api/permissions/**
-        - id: property-service
-          uri: lb://property-service
-          predicates:
-            - Path=/api/properties/**, /api/floors/**, /api/units/**
+
+jwt:
+  secret: db3081ad709552e4653b77350467fd7bac5d5d3c926338003acdf7a2b7e409aba9d2eb910a0bc9f5b86e818a1ce9719d690de4209c0ee5e50d28eee8d2154048
 
 eureka:
   client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka
-
-logging:
-  level:
-    com.proveritus.apigateway: DEBUG
-    org.springframework.cloud.gateway: DEBUG
-    reactor.netty.http.client: DEBUG
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost

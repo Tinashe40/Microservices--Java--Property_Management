@@ -6,6 +6,7 @@ import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
 import com.proveritus.userservice.auth.domain.User;
 import com.proveritus.cloudutility.exception.RegistrationException;
 import com.proveritus.userservice.userManager.domain.UserRepository;
+import com.proveritus.userservice.userManager.dto.ResetPasswordRequest;
 import com.proveritus.userservice.userManager.dto.UpdateUserDTO;
 import com.proveritus.userservice.userManager.mapper.UserMapper;
 import com.proveritus.userservice.userManager.service.UserService;
@@ -62,6 +63,7 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
         }
 
         User user = userMapper.fromCreateDto(signUpRequest);
+        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
         User savedUser = userRepository.save(user);
         log.debug("Saved user : {}", savedUser);
 
@@ -160,6 +162,15 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
     }
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
+    public void activateUser(Long id) {
+        log.debug("Request to activate User : {}", id);
+        User user = findEntityById(id);
+        user.setEnabled(true);
+        userRepository.save(user);
+    }
+
+    @Override
     public void changePassword(com.proveritus.userservice.userManager.dto.ChangePasswordRequest request) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username;
@@ -177,13 +188,21 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
         emailService.sendPasswordChangedEmail(user.getEmail(), user.getUsername());
     }
 
-    @Override
-    public void resetPassword(Long userId, com.proveritus.userservice.userManager.dto.ResetPasswordRequest request) {
-        User user = findEntityById(userId);
+    public void resetPassword(Long id, ResetPasswordRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+    }
 
-        emailService.sendPasswordChangedEmail(user.getEmail(), user.getUsername());
+    @Override
+    public long countAllUsers() {
+        return userRepository.count();
     }
 
     @Override

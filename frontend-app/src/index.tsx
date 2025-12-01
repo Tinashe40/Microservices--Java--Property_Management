@@ -4,9 +4,11 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import theme from './theme';
+import newTheme from './new_theme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './hooks/useAuth';
+import { SnackbarProvider } from './contexts/SnackbarProvider';
 
 const queryClient = new QueryClient();
 
@@ -16,10 +18,14 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={newTheme}>
         <CssBaseline />
         <BrowserRouter>
-          <App />
+          <AuthProvider>
+            <SnackbarProvider>
+              <App />
+            </SnackbarProvider>
+          </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>

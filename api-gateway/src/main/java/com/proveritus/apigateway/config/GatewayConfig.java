@@ -16,8 +16,8 @@ public class GatewayConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("user-service",r -> r.path("/api/users/**", "/api/auth/**")
-                        .filters(f -> f.filter((exchange, chain) -> {
+                .route("user-service",r -> r.path("/api/users/**", "/api/auth/**", "/api/roles/**", "/api/permissions/**")
+                        .filters(f -> f.stripPrefix(1).filter((exchange, chain) -> {
                             log.info("Request to user-service: {} {}", exchange.getRequest().getMethod(), exchange.getRequest().getURI());
                             HttpHeaders headers = exchange.getRequest().getHeaders();
                             headers.forEach((key, value) -> log.info("Header: {}={}", key, value));
@@ -25,7 +25,7 @@ public class GatewayConfig {
                         }))
                         .uri("lb://user-service"))
                 .route("property-service", r -> r.path("/api/properties/**", "/api/floors/**", "/api/units/**")
-                        .filters(f -> f.filter((exchange, chain) -> {
+                        .filters(f -> f.stripPrefix(1).filter((exchange, chain) -> {
                             log.info("Request to property-service: {} {}", exchange.getRequest().getMethod(), exchange.getRequest().getURI());
                             HttpHeaders headers = exchange.getRequest().getHeaders();
                             headers.forEach((key, value) -> log.info("Header: {}={}", key, value));

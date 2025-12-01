@@ -79,18 +79,14 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler)
                         .accessDeniedHandler(jwtAccessDeniedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/actuator/health",
-
-                                "/public/**").permitAll()
-
-                        .requestMatchers(HttpMethod.GET, "/users/by-username").permitAll()
-
+                        .requestMatchers("/api/auth/**",
+                                "/api/swagger-ui/**",
+                                "/api/v3/api-docs/**",
+                                "/api/swagger-ui.html",
+                                "/api/actuator/health",
+                                "/api/public/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/by-username").permitAll()
                         .anyRequest().authenticated()
-
                 )
                 .authenticationProvider(authenticationProvider());
 

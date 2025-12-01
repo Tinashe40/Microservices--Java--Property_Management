@@ -13,10 +13,19 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients
 @EnableCaching
+@EnableJpaRepositories(basePackages = {
+    "com.proveritus.propertyservice.audit.repository",
+    "com.proveritus.propertyservice.floor.domain",
+    "com.proveritus.propertyservice.property.domain",
+    "com.proveritus.propertyservice.unit.domain",
+    "com.proveritus.propertyservice.property.repository"
+})
 @OpenAPIDefinition(info = @Info(title = "Property Service", version = "v1"))
 @SecurityScheme(
         name = "bearerAuth",

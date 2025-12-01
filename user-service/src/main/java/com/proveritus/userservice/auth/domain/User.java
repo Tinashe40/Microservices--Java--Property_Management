@@ -34,6 +34,8 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String lastName;
 
+    private String phoneNumber;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),

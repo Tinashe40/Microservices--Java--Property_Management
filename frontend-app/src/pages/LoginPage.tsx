@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useSignIn } from '../api/authService';
+import { useAuth } from '../hooks/useAuth';
 import { Container, TextField, Button, Typography, Box, Card, CardContent, Alert } from '@mui/material';
+import BusinessIcon from '@mui/icons-material/Business';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { mutate: signIn, isError, error } = useSignIn();
+  const { mutate: signIn, isError, error, isPending } = useSignIn();
+  const { login } = useAuth();
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   useEffect(() => {
@@ -17,13 +20,13 @@ const LoginPage = () => {
       // Optionally remove the query param after showing the alert
       // navigate(location.pathname, { replace: true });
     }
-  }, [searchParams]);
+  }, [searchParams, navigate]);
 
   const handleLogin = () => {
     signIn({ usernameOrEmail: email, password }, {
       onSuccess: (data) => {
-        sessionStorage.setItem('token', data.token.accessToken);
-        navigate('/');
+        login(data.token.accessToken, data.user);
+        navigate('/dashboard');
       },
     });
   };
@@ -35,14 +38,23 @@ const LoginPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(45deg, #7e57c2 30%, #26a69a 90%)',
+        background: 'linear-gradient(to right, #673ab7, #E91E63)',
       }}
     >
       <Container maxWidth="xs">
-        <Card>
+        <Card sx={{
+          p: 2,
+          borderRadius: 2,
+        }}>
           <CardContent sx={{ p: 4 }}>
-            <Typography component="h1" variant="h5" sx={{ textAlign: 'center', mb: 3 }}>
-              Sign in
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2 }}>
+              <BusinessIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+              <Typography component="h1" variant="h5" sx={{ ml: 1, fontWeight: 'bold' }}>
+                PropManager
+              </Typography>
+            </Box>
+            <Typography component="h2" variant="body1" sx={{ textAlign: 'center', mb: 3, color: 'text.secondary' }}>
+              Sign in to your account
             </Typography>
             {showSuccessAlert && (
               <Alert severity="success" sx={{ mb: 2 }}>
@@ -80,8 +92,9 @@ const LoginPage = () => {
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 onClick={handleLogin}
+                disabled={isPending}
               >
-                Sign In
+                {isPending ? 'Signing In...' : 'Sign In'}
               </Button>
               {isError && (
                 <Typography color="error" sx={{ mt: 2 }}>
@@ -102,3 +115,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

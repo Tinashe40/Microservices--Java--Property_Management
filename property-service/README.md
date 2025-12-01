@@ -78,17 +78,19 @@ The following are the primary API endpoints exposed by the `property-service`.
 
 **Base Path**: `/api/properties`
 
-| Method | Endpoint             | Description                                          |
-|--------|----------------------|------------------------------------------------------|
-| `POST` | `/`                  | Create a new property.                               |
-| `GET`  | `/{id}`              | Get a property by its unique ID.                     |
-| `GET`  | `/`                  | Get all properties with filtering and pagination.    |
-| `PUT`  | `/{id}`              | Update an existing property.                         |
-| `DELETE`| `/{id}`              | Delete a property by its unique ID.                  |
-| `GET`  | `/search`            | Search for properties by name or address.            |
-| `GET`  | `/{id}/stats`        | Get detailed statistics for a specific property.     |
-| `GET`  | `/count`             | Get the total number of properties in the system.    |
-| `GET`  | `/stats/system-wide` | Get system-wide statistics for all properties.       |
+| Method | Endpoint             | Description                                          | Permissions |
+|--------|----------------------|------------------------------------------------------|-------------|
+| `POST` | `/`                  | Create a new property.                               | `property:create` |
+| `GET`  | `/{id}`              | Get a property by its unique ID.                     | `property:read` (Admin or owner) |
+| `GET`  | `/`                  | Get all properties with filtering and pagination.    | `property:read` (Admin sees all, User sees own) |
+| `PUT`  | `/{id}`              | Update an existing property.                         | `property:update` (Admin or owner) |
+| `DELETE`| `/{id}`              | Delete a property by its unique ID.                  | `property:delete` (Admin or owner) |
+| `GET`  | `/search`            | Search for properties by name or address.            | `property:read` (Admin sees all, User sees own) |
+| `GET`  | `/{id}/stats`        | Get detailed statistics for a specific property.     | `property:read` (Admin or owner) |
+| `GET`  | `/count`             | Get the total number of properties in the system.    | `ADMIN`, `SUPER_ADMIN` |
+| `GET`  | `/stats/system-wide` | Get system-wide statistics for all properties.       | `ADMIN`, `SUPER_ADMIN` |
+| `GET`  | `/count-by-type`     | Get the total number of properties by type.          | `ADMIN`, `SUPER_ADMIN` |
+| `GET`  | `/stats/system-wide-by-type` | Get system-wide statistics by property type. | `ADMIN`, `SUPER_ADMIN` |
 
 ### Floor Management
 

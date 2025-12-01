@@ -1,5 +1,6 @@
 package com.proveritus.propertyservice.floor.api;
 
+import com.proveritus.cloudutility.security.Permissions;
 import com.proveritus.propertyservice.floor.dto.FloorDTO;
 import com.proveritus.propertyservice.floor.dto.FloorOccupancyStats;
 import com.proveritus.propertyservice.floor.service.FloorService;
@@ -17,7 +18,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -29,12 +33,9 @@ public class FloorRestController {
     private final FloorService floorService;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('floor:create')")
     @Operation(summary = "Create a new floor")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Floor created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
-            @ApiResponse(responseCode = "409", description = "Floor already exists")
-    })
+
     public ResponseEntity<FloorDTO> createFloor(@Valid @RequestBody FloorDTO floorDTO) {
         log.info("Creating floor for property ID: {}", floorDTO.getPropertyId());
         FloorDTO createdFloor = floorService.createFloor(floorDTO);
@@ -42,6 +43,7 @@ public class FloorRestController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('floor:read', 'leasing_agent:read', 'maintenance_staff:read')")
     @Operation(summary = "Get a floor by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Floor found"),
@@ -54,6 +56,7 @@ public class FloorRestController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('floor:read', 'leasing_agent:read', 'maintenance_staff:read')")
     @Operation(summary = "Get floors by property ID with optional pagination")
     public ResponseEntity<?> getFloorsByPropertyId(
             @RequestParam Long propertyId,
@@ -65,10 +68,8 @@ public class FloorRestController {
         log.debug("Fetching floors for property ID: {}, page: {}, size: {}", propertyId, page, size);
 
         if (size <= 0) {
-            // Return all floors without pagination
             return ResponseEntity.ok(floorService.getFloorsByPropertyId(propertyId));
         } else {
-            // Return paginated results
             Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
                     ? Sort.Direction.DESC : Sort.Direction.ASC;
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
@@ -78,6 +79,7 @@ public class FloorRestController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('floor:update')")
     @Operation(summary = "Update an existing floor")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Floor updated successfully"),
@@ -92,6 +94,7 @@ public class FloorRestController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('floor:delete')")
     @Operation(summary = "Delete a floor by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Floor deleted successfully"),
@@ -105,7 +108,35 @@ public class FloorRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/bulk-create")
+    @PreAuthorize("hasAuthority('floor:create')")
+    @Operation(summary = "Create multiple floors")
+    public ResponseEntity<Void> createFloors(@Valid @RequestBody List<FloorDTO> floorDTOs) {
+        log.info("Creating {} floors", floorDTOs.size());
+        floorService.createFloors(floorDTOs);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PutMapping("/bulk-update")
+    @PreAuthorize("hasAuthority('floor:update')")
+    @Operation(summary = "Update multiple floors")
+    public ResponseEntity<Void> updateFloors(@Valid @RequestBody List<FloorDTO> floorDTOs) {
+        log.info("Updating {} floors", floorDTOs.size());
+        floorService.updateFloors(floorDTOs);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/bulk-delete")
+    @PreAuthorize("hasAuthority('floor:delete')")
+    @Operation(summary = "Delete multiple floors")
+    public ResponseEntity<Void> deleteFloors(@RequestBody List<Long> ids) {
+        log.info("Deleting {} floors", ids.size());
+        floorService.deleteFloors(ids);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{id}/occupancy-stats")
+    @PreAuthorize("hasAuthority('floor:read')")
     @Operation(summary = "Get occupancy statistics for a floor")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
@@ -118,6 +149,7 @@ public class FloorRestController {
     }
 
     @PostMapping("/{id}/refresh-occupancy")
+    @PreAuthorize("hasAuthority('floor:update')")
     @Operation(summary = "Refresh occupancy statistics for a floor")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Occupancy stats refreshed successfully"),

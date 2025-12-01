@@ -1,5 +1,6 @@
 package com.proveritus.propertyservice.floor.service.Impl;
 
+import com.proveritus.cloudutility.dto.UserDTO;
 import com.proveritus.propertyservice.floor.dto.FloorDTO;
 import com.proveritus.propertyservice.floor.dto.FloorOccupancyStats;
 import com.proveritus.propertyservice.floor.domain.Floor;
@@ -10,6 +11,7 @@ import com.proveritus.propertyservice.floor.domain.FloorRepository;
 import com.proveritus.cloudutility.enums.OccupancyStatus;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
 import com.proveritus.propertyservice.floor.domain.FloorValidator;
+import com.proveritus.propertyservice.service.BaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -17,6 +19,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,7 @@ public class FloorServiceImpl implements FloorService {
     private final PropertyRepository propertyRepository;
     private final ModelMapper modelMapper;
     private final FloorValidator floorValidator;
+    private final BaseService baseService;
 
     @Override
     @CacheEvict(value = "floors", allEntries = true)
@@ -40,6 +44,12 @@ public class FloorServiceImpl implements FloorService {
         floorValidator.validate(floorDTO);
 
         Property property = validatePropertyExists(floorDTO.getPropertyId());
+        UserDTO currentUser = baseService.getCurrentUser();
+        if ((currentUser.getRoles().contains("PROPERTY_MANAGER") || currentUser.getRoles().contains("USER"))
+                && !property.getManagedBy().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not authorized to create a floor for this property.");
+        }
+
         Floor floor = modelMapper.map(floorDTO, Floor.class);
         floor.setProperty(property);
 
@@ -66,7 +76,11 @@ public class FloorServiceImpl implements FloorService {
     @Transactional(readOnly = true)
     public List<FloorDTO> getFloorsByPropertyId(Long propertyId) {
         log.debug("Fetching all floors for property ID: {}", propertyId);
-        validatePropertyExists(propertyId);
+        Property property = validatePropertyExists(propertyId);
+        UserDTO currentUser = baseService.getCurrentUser();
+        if (currentUser.getRoles().contains("PROPERTY_MANAGER") && !property.getManagedBy().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not authorized to view floors for this property.");
+        }
         return floorRepository.findByPropertyId(propertyId).stream()
                 .map(floor -> modelMapper.map(floor, FloorDTO.class))
                 .collect(Collectors.toList());
@@ -76,7 +90,11 @@ public class FloorServiceImpl implements FloorService {
     @Transactional(readOnly = true)
     public Page<FloorDTO> getFloorsByPropertyId(Long propertyId, Pageable pageable) {
         log.debug("Fetching paginated floors for property ID: {}", propertyId);
-        validatePropertyExists(propertyId);
+        Property property = validatePropertyExists(propertyId);
+        UserDTO currentUser = baseService.getCurrentUser();
+        if (currentUser.getRoles().contains("PROPERTY_MANAGER") && !property.getManagedBy().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not authorized to view floors for this property.");
+        }
         return floorRepository.findByPropertyId(propertyId, pageable)
                 .map(floor -> modelMapper.map(floor, FloorDTO.class));
     }
@@ -88,6 +106,11 @@ public class FloorServiceImpl implements FloorService {
 
         Floor existingFloor = floorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Floor not found with id: " + id));
+
+        UserDTO currentUser = baseService.getCurrentUser();
+        if (currentUser.getRoles().contains("PROPERTY_MANAGER") && !existingFloor.getProperty().getManagedBy().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not authorized to update this floor.");
+        }
 
         Property property = validatePropertyExists(floorDTO.getPropertyId());
 
@@ -113,6 +136,12 @@ public class FloorServiceImpl implements FloorService {
         Floor floor = floorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Floor not found with id: " + id));
 
+        UserDTO currentUser = baseService.getCurrentUser();
+        if ((currentUser.getRoles().contains("PROPERTY_MANAGER") || currentUser.getRoles().contains("USER"))
+                && !floor.getProperty().getManagedBy().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not authorized to delete this floor.");
+        }
+
         if (!floor.getUnits().isEmpty()) {
             log.error("Cannot delete floor with ID: {} as it has {} units", id, floor.getUnits().size());
             throw new IllegalStateException("Cannot delete floor with existing units. Please remove units first.");
@@ -120,6 +149,84 @@ public class FloorServiceImpl implements FloorService {
 
         floorRepository.deleteById(id);
         log.debug("Floor deleted successfully with ID: {}", id);
+    }
+
+    @Override
+    @CacheEvict(value = "floors", allEntries = true)
+    public void createFloors(List<FloorDTO> floorDTOs) {
+        log.info("Creating {} new floors", floorDTOs.size());
+        UserDTO currentUser = baseService.getCurrentUser();
+        List<Floor> floors = floorDTOs.stream()
+                .map(floorDTO -> {
+                    floorValidator.validate(floorDTO);
+                    Property property = validatePropertyExists(floorDTO.getPropertyId());
+                    if ((currentUser.getRoles().contains("PROPERTY_MANAGER") || currentUser.getRoles().contains("USER"))
+                            && !property.getManagedBy().equals(currentUser.getId())) {
+                        throw new AccessDeniedException("You are not authorized to create a floor for this property.");
+                    }
+                    Floor floor = modelMapper.map(floorDTO, Floor.class);
+                    floor.setProperty(property);
+                    return floor;
+                })
+                .toList();
+        floorRepository.saveAll(floors);
+        log.debug("Successfully created {} floors", floors.size());
+    }
+
+    @Override
+    @CacheEvict(value = "floors", allEntries = true)
+    public void updateFloors(List<FloorDTO> floorDTOs) {
+        log.info("Updating {} floors", floorDTOs.size());
+        UserDTO currentUser = baseService.getCurrentUser();
+        List<Floor> floors = floorDTOs.stream()
+                .map(floorDTO -> {
+                    Floor existingFloor = floorRepository.findById(floorDTO.getId())
+                            .orElseThrow(() -> new EntityNotFoundException("Floor not found with id: " + floorDTO.getId()));
+
+                    if ((currentUser.getRoles().contains("PROPERTY_MANAGER") || currentUser.getRoles().contains("USER"))
+                            && !existingFloor.getProperty().getManagedBy().equals(currentUser.getId())) {
+                        throw new AccessDeniedException("You are not authorized to update this floor.");
+                    }
+
+                    Property property = validatePropertyExists(floorDTO.getPropertyId());
+
+                    if (!existingFloor.getProperty().getId().equals(property.getId())) {
+                        existingFloor.setProperty(property);
+                    }
+
+                    if (!existingFloor.getName().equals(floorDTO.getName())) {
+                        floorValidator.checkForDuplicateFloorName(floorDTO.getName(), property.getId());
+                    }
+
+                    updateFloorFields(existingFloor, floorDTO);
+                    return existingFloor;
+                })
+                .toList();
+        floorRepository.saveAll(floors);
+        log.debug("Successfully updated {} floors", floors.size());
+    }
+
+    @Override
+    @CacheEvict(value = "floors", allEntries = true)
+    public void deleteFloors(List<Long> ids) {
+        log.info("Deleting {} floors", ids.size());
+        UserDTO currentUser = baseService.getCurrentUser();
+        ids.forEach(id -> {
+            Floor floor = floorRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Floor not found with id: " + id));
+
+            if ((currentUser.getRoles().contains("PROPERTY_MANAGER") || currentUser.getRoles().contains("USER"))
+                    && !floor.getProperty().getManagedBy().equals(currentUser.getId())) {
+                throw new AccessDeniedException("You are not authorized to delete this floor.");
+            }
+
+            if (!floor.getUnits().isEmpty()) {
+                log.error("Cannot delete floor with ID: {} as it has {} units", id, floor.getUnits().size());
+                throw new IllegalStateException("Cannot delete floor with existing units. Please remove units first.");
+            }
+        });
+        floorRepository.deleteAllById(ids);
+        log.debug("Successfully deleted {} floors", ids.size());
     }
 
     @Override

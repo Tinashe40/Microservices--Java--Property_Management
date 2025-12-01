@@ -6,6 +6,9 @@ import com.proveritus.propertyservice.unit.domain.Unit;
 import com.proveritus.propertyservice.floor.domain.Floor;
 import jakarta.persistence.*;
 import lombok.*;
+// import org.springframework.data.elasticsearch.annotations.Document;
+// import org.springframework.data.elasticsearch.annotations.Field;
+// import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,29 +20,23 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+// @Document(indexName = "properties")
 public class Property extends BaseEntity {
     @Column(nullable = false)
+    // @Field(type = FieldType.Text, name = "name")
     private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    // @Field(type = FieldType.Keyword, name = "propertyType")
     private PropertyType propertyType;
 
     @Column(nullable = false)
+    // @Field(type = FieldType.Text, name = "address")
     private String address;
 
     private Integer numberOfFloors;
     private Integer numberOfUnits;
 
     private Long managedBy;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Floor> floors = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Unit> units = new ArrayList<>();
-
-    
 }

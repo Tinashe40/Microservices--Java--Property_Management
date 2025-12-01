@@ -1,9 +1,11 @@
 package com.proveritus.propertyservice.property.api;
 
+import com.proveritus.cloudutility.security.Permissions;
 import com.proveritus.cloudutility.enums.PropertyType;
 import com.proveritus.propertyservice.audit.annotation.Auditable;
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
 import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
+import com.proveritus.propertyservice.property.dto.PropertyFilterDTO;
 import com.proveritus.propertyservice.property.dto.SystemStatsDTO;
 import com.proveritus.propertyservice.property.service.PropertyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +35,7 @@ public class PropertyRestController {
 
     @Auditable
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PROPERTY_MANAGER')")
+    @PreAuthorize("hasAuthority('property:create')")
     @Operation(summary = "Create a new property")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Property created successfully"),
@@ -47,6 +49,7 @@ public class PropertyRestController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('property:read', 'leasing_agent:read', 'maintenance_staff:read')")
     @Operation(summary = "Get a property by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Property found"),
@@ -58,8 +61,8 @@ public class PropertyRestController {
         return ResponseEntity.ok(propertyService.getPropertyById(id));
     }
 
-
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('property:read', 'leasing_agent:read', 'maintenance_staff:read')")
     @Operation(summary = "Get all properties with optional filtering and pagination")
     public ResponseEntity<Page<PropertyDTO>> getProperties(
             @RequestParam(required = false) PropertyType propertyType,
@@ -74,7 +77,19 @@ public class PropertyRestController {
         }
     }
 
+    @GetMapping("/by-manager/{managerId}")
+    @PreAuthorize("hasAuthority('property:read')")
+    @Operation(summary = "Get properties by manager ID")
+    public ResponseEntity<Page<PropertyDTO>> getPropertiesByManager(
+            @PathVariable Long managerId,
+            Pageable pageable) {
+
+        log.debug("Fetching properties with managerId: {}, pageable: {}", managerId, pageable);
+        return ResponseEntity.ok(propertyService.getPropertiesByManager(managerId, pageable));
+    }
+
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('property:update')")
     @Operation(summary = "Update an existing property")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Property updated successfully"),
@@ -90,6 +105,7 @@ public class PropertyRestController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('property:delete')")
     @Operation(summary = "Delete a property by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Property deleted successfully"),
@@ -103,17 +119,19 @@ public class PropertyRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/search")
-    @Operation(summary = "Search properties by name or address")
-    public ResponseEntity<Page<PropertyDTO>> searchProperties(
-            @RequestParam String query,
+    @PostMapping("/search")
+    @PreAuthorize("hasAnyAuthority('property:read', 'leasing_agent:read', 'maintenance_staff:read')")
+    @Operation(summary = "Search properties by filter")
+    public ResponseEntity<Page<PropertyDTO>> searchPropertiesByFilter(
+            @RequestBody PropertyFilterDTO filter,
             Pageable pageable) {
 
-        log.debug("Searching properties with query: {}", query);
-        return ResponseEntity.ok(propertyService.searchProperties(query, pageable));
+        log.debug("Searching properties with filter: {}", filter);
+        return ResponseEntity.ok(propertyService.searchProperties(filter, pageable));
     }
 
     @GetMapping("/{id}/stats")
+    @PreAuthorize("hasAuthority('property:read')")
     @Operation(summary = "Get statistics for a property")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
@@ -126,6 +144,7 @@ public class PropertyRestController {
     }
 
     @GetMapping("/count")
+    @PreAuthorize("hasAuthority('property:count:read')")
     @Operation(summary = "Get total number of properties")
     public ResponseEntity<Long> getPropertiesCount() {
         log.debug("Fetching properties count");
@@ -133,6 +152,7 @@ public class PropertyRestController {
     }
 
     @GetMapping("/stats/system-wide")
+    @PreAuthorize("hasAuthority('system:stats:read')")
     @Operation(summary = "Get system-wide statistics")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully")
@@ -140,5 +160,33 @@ public class PropertyRestController {
     public ResponseEntity<SystemStatsDTO> getSystemWideStats() {
         log.debug("Fetching system-wide stats");
         return ResponseEntity.ok(propertyService.getSystemWideStats());
+    }
+
+    @GetMapping("/count-by-type")
+    @PreAuthorize("hasAuthority('property:count:read')")
+    @Operation(summary = "Get total number of properties by type")
+    public ResponseEntity<Long> getPropertiesCountByType(@RequestParam PropertyType propertyType) {
+        log.debug("Fetching properties count by type: {}", propertyType);
+        return ResponseEntity.ok(propertyService.countPropertiesByType(propertyType));
+    }
+
+    @GetMapping("/stats/system-wide-by-type")
+    @PreAuthorize("hasAuthority('system:stats:read')")
+    @Operation(summary = "Get system-wide statistics by property type")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully")
+    })
+    public ResponseEntity<SystemStatsDTO> getSystemWideStatsByType(@RequestParam PropertyType propertyType) {
+        log.debug("Fetching system-wide stats by type: {}", propertyType);
+        return ResponseEntity.ok(propertyService.getSystemWideStatsByType(propertyType));
+    }
+
+    @GetMapping("/by-manager/{managerId}/stats")
+    @PreAuthorize("hasAuthority('property:read')")
+    @Operation(summary = "Get statistics for properties by manager ID")
+    public ResponseEntity<PropertyStatsDTO> getPropertyStatsByManager(
+            @PathVariable Long managerId) {
+        log.debug("Fetching stats for properties with managerId: {}", managerId);
+        return ResponseEntity.ok(propertyService.getPropertyStatsByManager(managerId));
     }
 }

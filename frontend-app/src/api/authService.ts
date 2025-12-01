@@ -9,6 +9,7 @@ export interface UserDTO {
     email: string;
     firstName: string;
     lastName: string;
+    phoneNumber: string;
     roles: string[];
     enabled: boolean;
     accountNonExpired: boolean;
@@ -32,6 +33,7 @@ export interface SignUpRequest {
     password: string;
     firstName: string;
     lastName: string;
+    phoneNumber: string;
     roles: string[];
 }
 

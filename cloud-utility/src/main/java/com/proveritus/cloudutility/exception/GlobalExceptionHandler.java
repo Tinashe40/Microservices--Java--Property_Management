@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.dao.DataIntegrityViolationException;
+
 
 import java.time.LocalDateTime;
 
@@ -37,6 +39,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         apiError.addValidationErrors(ex.getBindingResult().getFieldErrors());
         apiError.addValidationError(ex.getBindingResult().getGlobalErrors());
         return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    protected ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String message = "Database error: " + ex.getMostSpecificCause().getMessage();
+        return buildResponseEntity(new ApiError(HttpStatus.CONFLICT, message, ex));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)

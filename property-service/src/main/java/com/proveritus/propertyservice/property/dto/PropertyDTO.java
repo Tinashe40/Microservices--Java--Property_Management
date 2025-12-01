@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 public class PropertyDTO {
 
+    private Long id;
     private String name;
     private PropertyType propertyType;
     private String address;

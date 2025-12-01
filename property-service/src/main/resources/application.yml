@@ -1,15 +1,14 @@
 server:
   port: 8082
-  servlet:
-    context-path: /api
-
 spring:
+  autoconfigure:
+    exclude:
   main:
     allow-bean-definition-overriding: true
   application:
     name: property-service
   datasource:
-    url: jdbc:mysql://localhost:3306/properties?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/staging_data_properties?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:sudo0047}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -42,8 +41,7 @@ spring:
   data:
     web:
       pageable:
-        default-page-size: 20
-        max-page-size: 100
+        max-page-size: 2000
 
 jwt:
   secret: ${JWT_SECRET:db3081ad709552e4653b77350467fd7bac5d5d3c926338003acdf7a2b7e409aba9d2eb910a0bc9f5b86e818a1ce9719d690de4209c0ee5e50d28eee8d2154048}
@@ -54,6 +52,10 @@ eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+
+management:
+  tracing:
+    enabled: false
 #
 #management:
 #  endpoints:

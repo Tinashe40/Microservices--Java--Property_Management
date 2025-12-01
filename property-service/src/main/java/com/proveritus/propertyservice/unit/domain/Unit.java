@@ -10,6 +10,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "units")
 @Getter
@@ -39,6 +41,14 @@ public class Unit extends BaseEntity {
     private OccupancyStatus occupancyStatus;
 
     private String tenant;
+
+    private String tenantEmail;
+
+    private String tenantPhone;
+
+    private LocalDate leaseStartDate;
+
+    private LocalDate leaseEndDate;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)

@@ -10,27 +10,19 @@ import java.util.List;
 
 public interface UnitService {
     UnitDTO createUnit(UnitDTO unitDTO);
-
     UnitDTO getUnitById(Long id) throws EntityNotFoundException;
-
     UnitDTO getUnitByNameAndPropertyId(String name, Long propertyId) throws EntityNotFoundException;
-
     List<UnitDTO> getUnitsByPropertyId(Long propertyId);
-
     Page<UnitDTO> getUnitsByPropertyId(Long propertyId, Pageable pageable);
-
     List<UnitDTO> getUnitsByFloorId(Long floorId);
-
     Page<UnitDTO> getUnitsByFloorId(Long floorId, Pageable pageable);
-
     Page<UnitDTO> getUnitsWithFilters(Long propertyId, Long floorId, OccupancyStatus occupancyStatus, Pageable pageable);
-
     UnitDTO updateUnit(Long id, UnitDTO unitDTO) throws EntityNotFoundException;
-
     void deleteUnit(Long id) throws EntityNotFoundException;
-
+    void createUnits(List<UnitDTO> unitDTOs);
+    void updateUnits(List<UnitDTO> unitDTOs);
+    void deleteUnits(List<Long> ids);
     UnitDTO updateOccupancyStatus(Long id, OccupancyStatus occupancyStatus, String tenant) throws EntityNotFoundException;
-
     List<UnitDTO> searchUnits(String query);
 
     Page<UnitDTO> searchUnits(String query, Pageable pageable);

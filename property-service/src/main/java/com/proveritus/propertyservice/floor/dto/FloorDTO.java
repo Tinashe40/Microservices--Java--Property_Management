@@ -11,8 +11,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class FloorDTO {
+
+    private Long id;
 
     @NotNull(message = "Property ID is required")
     private Long propertyId;

@@ -15,8 +15,9 @@ public class PermissionServiceImpl extends DomainServiceImpl<Permission, Permiss
 
     private final PermissionRepository repository;
 
-    public PermissionServiceImpl(PermissionRepository repository, PermissionMapper mapper) {
-        super(repository, mapper);
+    public PermissionServiceImpl(PermissionRepository repository,
+                                 PermissionMapper mapper) {
+        super(repository,mapper);
         this.repository = repository;
     }
 

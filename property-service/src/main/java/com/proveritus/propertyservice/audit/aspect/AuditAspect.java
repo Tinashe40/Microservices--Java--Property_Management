@@ -23,25 +23,25 @@ public class AuditAspect {
     private final AuditLogRepository auditLogRepository;
     private final ObjectMapper objectMapper;
 
-    @Around("@annotation(auditable)")
-    public Object audit(ProceedingJoinPoint joinPoint, Auditable auditable) throws Throwable {
-        Object result = joinPoint.proceed();
-
-        try {
-            CustomPrincipal principal = (CustomPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-            AuditLog auditLog = new AuditLog();
-            auditLog.setMethodName(joinPoint.getSignature().toShortString());
-            auditLog.setParams(objectMapper.writeValueAsString(joinPoint.getArgs()));
-            auditLog.setUserId(principal.getId());
-            auditLog.setUserName(principal.getUsername());
-            auditLog.setTimestamp(LocalDateTime.now());
-
-            auditLogRepository.save(auditLog);
-        } catch (Exception e) {
-            // Log the exception, but don't block the main flow
-        }
-
-        return result;
-    }
+//    @Around("@annotation(auditable)")
+//    public Object audit(ProceedingJoinPoint joinPoint, Auditable auditable) throws Throwable {
+//        Object result = joinPoint.proceed();
+//
+//        try {
+//            CustomPrincipal principal = (CustomPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//
+//            AuditLog auditLog = new AuditLog();
+//            auditLog.setMethodName(joinPoint.getSignature().toShortString());
+//            auditLog.setParams(objectMapper.writeValueAsString(joinPoint.getArgs()));
+//            auditLog.setUserId(principal.getId());
+//            auditLog.setUserName(principal.getUsername());
+//            auditLog.setTimestamp(LocalDateTime.now());
+//
+//            auditLogRepository.save(auditLog);
+//        } catch (Exception e) {
+//            // Log the exception, but don't block the main flow
+//        }
+//
+//        return result;
+//    }
 }
