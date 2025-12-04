@@ -64,6 +64,10 @@ public class JwtTokenProvider {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
+    public Date getExpirationDateFromToken(String token) {
+        return getClaimFromToken(token, Claims::getExpiration);
+    }
+
     public boolean isTokenValid(String token) {
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);

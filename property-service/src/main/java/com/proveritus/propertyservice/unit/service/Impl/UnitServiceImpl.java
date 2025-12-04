@@ -4,7 +4,7 @@ import com.proveritus.cloudutility.dto.UserDTO;
 import com.proveritus.cloudutility.enums.*;
 import com.proveritus.propertyservice.floor.domain.Floor;
 import com.proveritus.propertyservice.property.domain.Property;
-import com.proveritus.propertyservice.service.BaseService;
+import com.proveritus.cloudutility.service.BaseService;
 import com.proveritus.propertyservice.unit.domain.Unit;
 import com.proveritus.cloudutility.enums.RentType;
 import com.proveritus.cloudutility.exception.EntityNotFoundException;

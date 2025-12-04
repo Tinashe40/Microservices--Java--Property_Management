@@ -11,7 +11,7 @@ import com.proveritus.propertyservice.floor.domain.FloorRepository;
 import com.proveritus.cloudutility.enums.OccupancyStatus;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
 import com.proveritus.propertyservice.floor.domain.FloorValidator;
-import com.proveritus.propertyservice.service.BaseService;
+import com.proveritus.cloudutility.service.BaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;

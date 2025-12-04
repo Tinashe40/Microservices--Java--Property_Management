@@ -1,4 +1,4 @@
-package com.proveritus.userservice.security;
+package com.proveritus.cloudutility.security;
 
 public final class Roles {
     private Roles() {}

@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=sudo0047
+      - MYSQL_DATABASE=staging_data_properties
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+
+  eureka-server:
+    image: eureka-server:0.0.1-SNAPSHOT
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_URL=http://eureka-server:8761/eureka
+    healthcheck:
+      test: "curl -f http://localhost:8761/ || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  user-service:
+    image: user-service:0.0.1-SNAPSHOT
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_USERNAME=root
+      - DB_PASSWORD=sudo0047
+      - EUREKA_URL=http://eureka-server:8761/eureka
+      - JWT_SECRET=db3081ad709552e4653b77350467fd7bac5d5d3c926338003acdf7a2b7e409aba9d2eb910a0bc9f5b86e818a1ce9719d690de4209c0ee5e50d28eee8d2154048
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
+  property-service:
+    image: property-service:0.0.1-SNAPSHOT
+    container_name: property-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_USERNAME=root
+      - DB_PASSWORD=sudo0047
+      - EUREKA_URL=http://eureka-server:8761/eureka
+      - JWT_SECRET=db3081ad709552e4653b77350467fd7bac5d5d3c926338003acdf7a2b7e409aba9d2eb910a0bc9f5b86e818a1ce9719d690de4209c0ee5e50d28eee8d2154048
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
+  api-gateway:
+    image: api-gateway:0.0.1-SNAPSHOT
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_URL=http://eureka-server:8761/eureka
+      - JWT_SECRET=db3081ad709552e4653b77350467fd7bac5d5d3c926338003acdf7a2b7e409aba9d2eb910a0bc9f5b86e818a1ce9719d690de4209c0ee5e50d28eee8d2154048
+    depends_on:
+      - eureka-server
+      - user-service
+      - property-service
+    healthcheck:
+      test: "curl -f http://localhost:8080/actuator/health || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 5

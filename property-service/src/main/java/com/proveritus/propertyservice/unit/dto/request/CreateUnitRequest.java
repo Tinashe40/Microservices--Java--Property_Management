@@ -1,0 +1,47 @@
+package com.proveritus.propertyservice.unit.dto.request;
+
+import com.proveritus.cloudutility.enums.OccupancyStatus;
+import com.proveritus.cloudutility.enums.RentType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+
+@Getter
+@Setter
+public class CreateUnitRequest {
+
+    @NotBlank(message = "Unit name is required")
+    private String name;
+
+    @Positive(message = "Size must be positive")
+    private Double size;
+
+    private RentType rentType;
+
+    @Positive(message = "Rate per square meter must be positive")
+    private Double ratePerSqm;
+
+    @Positive(message = "Monthly rent must be positive")
+    private Double monthlyRent;
+
+    private OccupancyStatus occupancyStatus;
+
+    private String tenant;
+
+    private String tenantEmail;
+
+    private String tenantPhone;
+
+    private LocalDate leaseStartDate;
+
+    private LocalDate leaseEndDate;
+
+    @NotNull(message = "Property ID is required")
+    private Long propertyId;
+
+    private Long floorId;
+}

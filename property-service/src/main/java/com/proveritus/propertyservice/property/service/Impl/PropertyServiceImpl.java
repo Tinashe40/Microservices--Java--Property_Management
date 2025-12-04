@@ -15,7 +15,7 @@ import com.proveritus.propertyservice.property.dto.SystemStatsDTO;
 import com.proveritus.propertyservice.property.repository.PropertySpecificationRepository;
 import com.proveritus.propertyservice.property.service.PropertyService;
 import com.proveritus.propertyservice.property.service.enrichment.UserEnrichmentService;
-import com.proveritus.propertyservice.service.BaseService;
+import com.proveritus.cloudutility.service.BaseService;
 import com.proveritus.propertyservice.unit.domain.UnitRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

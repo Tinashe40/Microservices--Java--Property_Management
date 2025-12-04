@@ -1,10 +1,8 @@
-package com.proveritus.propertyservice.service;
+package com.proveritus.cloudutility.service;
 
 import com.proveritus.cloudutility.dto.UserDTO;
 import com.proveritus.cloudutility.security.CustomPrincipal;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.stream.Collectors;
