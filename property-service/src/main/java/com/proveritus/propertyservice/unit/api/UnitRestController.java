@@ -1,8 +1,7 @@
 package com.proveritus.propertyservice.unit.api;
 
-import com.proveritus.cloudutility.security.Permissions;
+import com.proveritus.cloudutility.audit.annotation.Auditable;
 import com.proveritus.cloudutility.enums.OccupancyStatus;
-
 import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import com.proveritus.propertyservice.unit.service.UnitService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,16 +22,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 @Slf4j
 @RestController
-@RequestMapping("/units")
+@RequestMapping("/api/units")
 @RequiredArgsConstructor
 @Tag(name = "Units", description = "APIs for managing property units")
 public class UnitRestController {
     private final UnitService unitService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('unit:create')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Unit).CREATE) and @apiFeatureControl.isEnabled('units', 'create')")
     @Operation(summary = "Create a new unit")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Unit created successfully"),
@@ -40,32 +41,35 @@ public class UnitRestController {
             @ApiResponse(responseCode = "404", description = "Property or floor not found"),
             @ApiResponse(responseCode = "409", description = "Unit already exists")
     })
+    @Auditable
     public ResponseEntity<UnitDTO> createUnit(@Valid @RequestBody UnitDTO unitDTO) {
         log.info("Creating unit: {}", unitDTO.getName());
-        UnitDTO createdUnit = unitService.createUnit(unitDTO);
+        UnitDTO createdUnit = unitService.create(unitDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUnit);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('unit:read', 'leasing_agent:read', 'maintenance_staff:read')")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get a unit by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unit found"),
             @ApiResponse(responseCode = "404", description = "Unit not found")
     })
+    @Auditable
     public ResponseEntity<UnitDTO> getUnitById(
             @Parameter(description = "ID of the unit to retrieve") @PathVariable Long id) {
         log.debug("Fetching unit with ID: {}", id);
-        return ResponseEntity.ok(unitService.getUnitById(id));
+        return ResponseEntity.ok(unitService.findById(id));
     }
 
     @GetMapping("/name/{name}")
-    @PreAuthorize("hasAnyAuthority('unit:read', 'leasing_agent:read', 'maintenance_staff:read')")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get a unit by name and property ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unit found"),
             @ApiResponse(responseCode = "404", description = "Unit not found")
     })
+    @Auditable
     public ResponseEntity<UnitDTO> getUnitByName(
             @Parameter(description = "Name of the unit to retrieve") @PathVariable String name,
             @RequestParam Long propertyId) {
@@ -74,8 +78,9 @@ public class UnitRestController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('unit:read', 'leasing_agent:read', 'maintenance_staff:read')")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get units with filtering and pagination")
+    @Auditable
     public ResponseEntity<?> getUnits(
             @RequestParam(required = false) Long propertyId,
             @RequestParam(required = false) Long floorId,
@@ -90,55 +95,59 @@ public class UnitRestController {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-
+        
+        Pageable pageable;
         if (size <= 0) {
-            // Return all units without pagination
-            if (propertyId != null && floorId == null && occupancyStatus == null) {
-                return ResponseEntity.ok(unitService.getUnitsByPropertyId(propertyId));
-            } else if (floorId != null && propertyId == null && occupancyStatus == null) {
-                return ResponseEntity.ok(unitService.getUnitsByFloorId(floorId));
-            } else {
-                return ResponseEntity.ok(unitService.getUnitsWithFilters(propertyId, floorId, occupancyStatus, Pageable.unpaged()).getContent());
-            }
+            pageable = Pageable.unpaged();
         } else {
-            // Return paginated results
-            return ResponseEntity.ok(unitService.getUnitsWithFilters(propertyId, floorId, occupancyStatus, pageable));
+            pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        }
+
+        Page<UnitDTO> unitsPage = unitService.getUnitsWithFilters(propertyId, floorId, occupancyStatus, pageable);
+
+        if (pageable.isUnpaged()) {
+            return ResponseEntity.ok(unitsPage.getContent());
+        } else {
+            return ResponseEntity.ok(unitsPage);
         }
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('unit:update')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Unit).UPDATE) and @apiFeatureControl.isEnabled('units', 'update')")
     @Operation(summary = "Update an existing unit")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unit updated successfully"),
             @ApiResponse(responseCode = "404", description = "Unit not found"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
+    @Auditable
     public ResponseEntity<UnitDTO> updateUnit(
             @Parameter(description = "ID of the unit to update") @PathVariable Long id,
             @Valid @RequestBody UnitDTO unitDTO) {
         log.info("Updating unit with ID: {}", id);
-        return ResponseEntity.ok(unitService.updateUnit(id, unitDTO));
+        unitDTO.setId(id);
+        return ResponseEntity.ok(unitService.update(unitDTO));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('unit:delete')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Unit).DELETE) and @apiFeatureControl.isEnabled('units', 'delete')")
     @Operation(summary = "Delete a unit by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Unit deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Unit not found")
     })
+    @Auditable
     public ResponseEntity<Void> deleteUnit(
             @Parameter(description = "ID of the unit to delete") @PathVariable Long id) {
         log.info("Deleting unit with ID: {}", id);
-        unitService.deleteUnit(id);
+        unitService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/bulk-create")
-    @PreAuthorize("hasAuthority('unit:create')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Unit).CREATE) and @apiFeatureControl.isEnabled('units', 'bulk-create')")
     @Operation(summary = "Create multiple units")
+    @Auditable
     public ResponseEntity<Void> createUnits(@Valid @RequestBody List<UnitDTO> unitDTOs) {
         log.info("Creating {} units", unitDTOs.size());
         unitService.createUnits(unitDTOs);
@@ -146,7 +155,7 @@ public class UnitRestController {
     }
 
     @PutMapping("/bulk-update")
-    @PreAuthorize("hasAuthority('unit:update')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Unit).UPDATE) and @apiFeatureControl.isEnabled('units', 'bulk-update')")
     @Operation(summary = "Update multiple units")
     public ResponseEntity<Void> updateUnits(@Valid @RequestBody List<UnitDTO> unitDTOs) {
         log.info("Updating {} units", unitDTOs.size());
@@ -155,7 +164,7 @@ public class UnitRestController {
     }
 
     @DeleteMapping("/bulk-delete")
-    @PreAuthorize("hasAuthority('unit:delete')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Unit).DELETE) and @apiFeatureControl.isEnabled('units', 'bulk-delete')")
     @Operation(summary = "Delete multiple units")
     public ResponseEntity<Void> deleteUnits(@RequestBody List<Long> ids) {
         log.info("Deleting {} units", ids.size());
@@ -164,7 +173,7 @@ public class UnitRestController {
     }
 
     @PatchMapping("/{id}/occupancy")
-    @PreAuthorize("hasAnyAuthority('unit:update', 'leasing_agent:update_occupancy')")
+    @PreAuthorize("(hasAnyAuthority(T(com.proveritus.cloudutility.security.Permissions.Unit).UPDATE, T(com.proveritus.cloudutility.security.Permissions.LeasingAgent).UPDATE_OCCUPANCY)) and @apiFeatureControl.isEnabled('units', 'update-occupancy')")
     @Operation(summary = "Update unit occupancy status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Occupancy status updated successfully"),
@@ -179,7 +188,7 @@ public class UnitRestController {
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasAnyAuthority('unit:read', 'leasing_agent:read', 'maintenance_staff:read')")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Search units by name or tenant")
     public ResponseEntity<?> searchUnits(
             @RequestParam String query,
@@ -197,7 +206,7 @@ public class UnitRestController {
     }
 
     @GetMapping("/property/{propertyId}/income")
-    @PreAuthorize("hasAuthority('unit:read')")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Calculate potential rental income for a property")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Income calculated successfully"),
@@ -210,7 +219,7 @@ public class UnitRestController {
     }
 
     @GetMapping("/property/{propertyId}/count")
-    @PreAuthorize("hasAuthority('unit:read')")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Count units in a property")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Count retrieved successfully"),

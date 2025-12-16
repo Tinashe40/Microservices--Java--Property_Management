@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proveritus.cloudutility.exception.ErrorDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -11,9 +12,12 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Date;
 
-public abstract class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+@Component
+@RequiredArgsConstructor
+public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
@@ -23,7 +27,6 @@ public abstract class JwtAuthenticationEntryPoint implements AuthenticationEntry
 
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), "Unauthorized", authException.getMessage());
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), errorDetails);
+        objectMapper.writeValue(response.getOutputStream(), errorDetails);
     }
 }

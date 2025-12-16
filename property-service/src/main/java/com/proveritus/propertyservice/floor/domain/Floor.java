@@ -4,18 +4,22 @@ import com.proveritus.cloudutility.jpa.BaseEntity;
 import com.proveritus.propertyservice.property.domain.Property;
 import com.proveritus.propertyservice.unit.domain.Unit;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "floors")
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Floor extends BaseEntity {
     @Column(nullable = false)
     private String name;

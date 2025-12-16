@@ -1,6 +1,5 @@
 package com.proveritus.propertyservice.unit.domain;
 
-import com.proveritus.cloudutility.enums.*;
 import com.proveritus.cloudutility.jpa.BaseEntity;
 import com.proveritus.propertyservice.floor.domain.Floor;
 import com.proveritus.propertyservice.property.domain.Property;
@@ -14,11 +13,11 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "units")
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Unit extends BaseEntity {
 
     @NotBlank
@@ -29,7 +28,7 @@ public class Unit extends BaseEntity {
     private Double size;
 
     @Enumerated(EnumType.STRING)
-    private RentType rentType;
+    private com.proveritus.cloudutility.enums.RentType rentType;
 
     @Positive
     private Double ratePerSqm;
@@ -38,7 +37,7 @@ public class Unit extends BaseEntity {
     private Double monthlyRent;
 
     @Enumerated(EnumType.STRING)
-    private OccupancyStatus occupancyStatus;
+    private com.proveritus.cloudutility.enums.OccupancyStatus occupancyStatus;
 
     private String tenant;
 

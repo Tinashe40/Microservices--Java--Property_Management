@@ -35,6 +35,12 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration-in-ms}")
     private int jwtExpirationInMs;
 
+    @Value("${jwt.issuer}")
+    private String jwtIssuer;
+
+    @Value("${jwt.audience}")
+    private String jwtAudience;
+
     private SecretKey key;
 
     @PostConstruct
@@ -54,6 +60,8 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(username)
+                .issuer(jwtIssuer)
+                .audience().add(jwtAudience).and()
                 .issuedAt(new Date())
                 .expiration(expiryDate)
                 .signWith(key)
@@ -70,7 +78,12 @@ public class JwtTokenProvider {
 
     public boolean isTokenValid(String token) {
         try {
-            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+            Jwts.parser()
+                    .verifyWith(key)
+                    .requireIssuer(jwtIssuer)
+                    .requireAudience(jwtAudience)
+                    .build()
+                    .parseSignedClaims(token);
             return true;
         } catch (SignatureException ex) {
             logger.error("Invalid JWT signature");
