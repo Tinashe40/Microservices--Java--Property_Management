@@ -16,10 +16,7 @@ public interface UserRepository extends BaseDao<User, Long> {
     Optional<User> findByEmailAndDeletedFalse(String email);
     Boolean existsByUsernameAndDeletedFalse(String username);
     Boolean existsByEmailAndDeletedFalse(String email);
-
     Page<User> findAllByDeletedFalse(Pageable pageable);
-
     Optional<User> findByIdAndDeletedFalse(Long id);
-
     Collection<Object> findByEmail(String email);
 }

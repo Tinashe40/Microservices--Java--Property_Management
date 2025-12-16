@@ -1,4 +1,4 @@
-package com.proveritus.cloudutility.security;
+package com.proveritus.cloudutility.security.jwt;
 
 import org.springframework.context.annotation.Configuration;
 

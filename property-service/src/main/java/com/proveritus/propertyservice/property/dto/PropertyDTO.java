@@ -3,6 +3,7 @@ package com.proveritus.propertyservice.property.dto;
 import com.proveritus.propertyservice.floor.dto.FloorDTO;
 import com.proveritus.cloudutility.dto.UserDTO;
 import com.proveritus.cloudutility.enums.PropertyType;
+import com.proveritus.cloudutility.jpa.Updatable;
 import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import lombok.*;
 
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PropertyDTO {
+public class PropertyDTO implements Updatable {
 
     private Long id;
     private String name;

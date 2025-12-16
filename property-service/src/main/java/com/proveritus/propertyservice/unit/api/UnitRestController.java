@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,8 +22,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import org.springframework.data.domain.Page;
 
 @Slf4j
 @RestController
@@ -147,6 +146,10 @@ public class UnitRestController {
     @PostMapping("/bulk-create")
     @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Unit).CREATE) and @apiFeatureControl.isEnabled('units', 'bulk-create')")
     @Operation(summary = "Create multiple units")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Units created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
     @Auditable
     public ResponseEntity<Void> createUnits(@Valid @RequestBody List<UnitDTO> unitDTOs) {
         log.info("Creating {} units", unitDTOs.size());
@@ -157,6 +160,11 @@ public class UnitRestController {
     @PutMapping("/bulk-update")
     @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Unit).UPDATE) and @apiFeatureControl.isEnabled('units', 'bulk-update')")
     @Operation(summary = "Update multiple units")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Units updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "404", description = "One or more units not found")
+    })
     public ResponseEntity<Void> updateUnits(@Valid @RequestBody List<UnitDTO> unitDTOs) {
         log.info("Updating {} units", unitDTOs.size());
         unitService.updateUnits(unitDTOs);
@@ -166,7 +174,10 @@ public class UnitRestController {
     @DeleteMapping("/bulk-delete")
     @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Unit).DELETE) and @apiFeatureControl.isEnabled('units', 'bulk-delete')")
     @Operation(summary = "Delete multiple units")
-    public ResponseEntity<Void> deleteUnits(@RequestBody List<Long> ids) {
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Units deleted successfully")
+    })
+    public ResponseEntity<Void> deleteUnits(@Parameter(description = "List of unit IDs to delete") @RequestBody List<Long> ids) {
         log.info("Deleting {} units", ids.size());
         unitService.deleteUnits(ids);
         return ResponseEntity.noContent().build();
@@ -197,11 +208,19 @@ public class UnitRestController {
 
         log.debug("Searching units with query: {}", query);
 
+        Pageable pageable;
         if (size <= 0) {
-            return ResponseEntity.ok(unitService.searchUnits(query));
+            pageable = Pageable.unpaged();
         } else {
-            Pageable pageable = PageRequest.of(page, size);
-            return ResponseEntity.ok(unitService.searchUnits(query, pageable));
+            pageable = PageRequest.of(page, size);
+        }
+
+        Page<UnitDTO> unitsPage = unitService.searchUnits(query, pageable);
+
+        if (pageable.isUnpaged()) {
+            return ResponseEntity.ok(unitsPage.getContent());
+        } else {
+            return ResponseEntity.ok(unitsPage);
         }
     }
 

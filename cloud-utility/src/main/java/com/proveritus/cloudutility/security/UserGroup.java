@@ -1,7 +1,7 @@
 package com.proveritus.cloudutility.security;
 
-public final class Roles {
-    private Roles() {}
+public final class UserGroup {
+    private UserGroup() {}
 
     public static final String ADMIN = "ADMIN";
     public static final String SUPER_ADMIN = "SUPER_ADMIN";

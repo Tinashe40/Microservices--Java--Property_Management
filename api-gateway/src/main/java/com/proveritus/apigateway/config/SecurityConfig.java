@@ -1,5 +1,6 @@
 package com.proveritus.apigateway.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -10,47 +11,53 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.List;
-
- @Configuration @EnableWebFluxSecurity
+@Configuration
+@EnableWebFluxSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final ReactiveJwtDecoder jwtDecoder;
+    private final SecurityProperties securityProperties;
 
-    public SecurityConfig(ReactiveJwtDecoder jwtDecoder) {
-        this.jwtDecoder = jwtDecoder;
+    /**
+     * Configures the security filter chain for reactive web applications.
+     *
+     * @param http the server HTTP security configuration
+     * @return configured security web filter chain
+     */
+    @Bean
+    public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
+        return http
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeExchange(this::configureAuthorization)
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.jwtDecoder(jwtDecoder)))
+                .build();
     }
 
-    @Bean
-    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-        http
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeExchange(exchange -> exchange
-                // Allow auth endpoints without authentication
-                .pathMatchers("/api/auth/**").permitAll()
-                // All other requests require authentication
-                .anyExchange().authenticated()
-            )
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt.jwtDecoder(jwtDecoder))
-            );
-
-        return http.build();
+    /**
+     * Configures authorization rules for different endpoints.
+     */
+    private void configureAuthorization(
+            ServerHttpSecurity.AuthorizeExchangeSpec exchange) {
+        exchange
+                .pathMatchers(securityProperties.getPublicPaths()).permitAll()
+                .anyExchange().authenticated();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
+        final var source = new UrlBasedCorsConfigurationSource();
+        final var config = new CorsConfiguration();
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        config.setAllowedOrigins(securityProperties.getAllowedOrigins());
+        config.setAllowedMethods(securityProperties.getAllowedMethods());
+        config.setAllowedHeaders(securityProperties.getAllowedHeaders());
+        config.setAllowCredentials(securityProperties.isAllowCredentials());
+        config.setMaxAge(securityProperties.getMaxAge());
+
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 }

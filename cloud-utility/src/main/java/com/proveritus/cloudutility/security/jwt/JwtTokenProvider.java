@@ -1,4 +1,4 @@
-package com.proveritus.cloudutility.security;
+package com.proveritus.cloudutility.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -33,7 +33,7 @@ public class JwtTokenProvider {
     private String jwtSecret;
 
     @Value("${jwt.expiration-in-ms}")
-    private int jwtExpirationInMs;
+    private long jwtExpirationInMs;
 
     @Value("${jwt.issuer}")
     private String jwtIssuer;

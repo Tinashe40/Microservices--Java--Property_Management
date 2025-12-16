@@ -1,9 +1,11 @@
 package com.proveritus.propertyservice.property.service.Impl;
 
+import com.proveritus.cloudutility.audit.annotation.Auditable;
 import com.proveritus.cloudutility.dto.UserDTO;
 import com.proveritus.cloudutility.enums.OccupancyStatus;
 import com.proveritus.cloudutility.enums.PropertyType;
-import com.proveritus.cloudutility.exception.EntityNotFoundException;
+import com.proveritus.cloudutility.jpa.DomainServiceImpl;
+import com.proveritus.cloudutility.security.util.SecurityUtils;
 import com.proveritus.propertyservice.property.domain.Property;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
 import com.proveritus.propertyservice.property.domain.PropertySpecification;
@@ -12,20 +14,18 @@ import com.proveritus.propertyservice.property.dto.PropertyDTO;
 import com.proveritus.propertyservice.property.dto.PropertyFilterDTO;
 import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
 import com.proveritus.propertyservice.property.dto.SystemStatsDTO;
+import com.proveritus.propertyservice.property.mapper.PropertyMapper;
 import com.proveritus.propertyservice.property.repository.PropertySpecificationRepository;
 import com.proveritus.propertyservice.property.service.PropertyService;
 import com.proveritus.propertyservice.property.service.enrichment.UserEnrichmentService;
-import com.proveritus.cloudutility.service.BaseService;
 import com.proveritus.propertyservice.unit.domain.UnitRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,30 +36,39 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional
-public class PropertyServiceImpl implements PropertyService {
+public class PropertyServiceImpl extends DomainServiceImpl<Property, PropertyDTO, PropertyDTO, PropertyDTO> implements PropertyService {
 
     private final PropertyRepository propertyRepository;
     private final UnitRepository unitRepository;
-    private final ModelMapper modelMapper;
+    private final PropertyMapper propertyMapper;
     private final PropertyValidator propertyValidator;
     private final UserEnrichmentService userEnrichmentService;
-    private final BaseService baseService;
     private final PropertySpecificationRepository propertySpecificationRepository;
+
+    public PropertyServiceImpl(PropertyRepository propertyRepository, UnitRepository unitRepository, PropertyMapper propertyMapper, PropertyValidator propertyValidator, UserEnrichmentService userEnrichmentService, PropertySpecificationRepository propertySpecificationRepository) {
+        super(propertyRepository, propertyMapper);
+        this.propertyRepository = propertyRepository;
+        this.unitRepository = unitRepository;
+        this.propertyMapper = propertyMapper;
+        this.propertyValidator = propertyValidator;
+        this.userEnrichmentService = userEnrichmentService;
+        this.propertySpecificationRepository = propertySpecificationRepository;
+    }
 
     // ========== Create Operations ==========
 
     @Override
     @CacheEvict(value = "properties", allEntries = true)
-    public PropertyDTO createProperty(PropertyDTO propertyDTO) {
+    @Auditable(action = "CREATE_PROPERTY", entity = "Property")
+    public PropertyDTO create(PropertyDTO propertyDTO) {
         log.info("Creating new property: {}", propertyDTO.getName());
         propertyValidator.validate(propertyDTO);
 
-        UserDTO currentUser = baseService.getCurrentUser();
+        UserDTO currentUser = SecurityUtils.getCurrentUserDTO().orElseThrow(() -> new AccessDeniedException("User not authenticated"));
         propertyDTO.setManagedBy(currentUser.getId());
 
-        Property property = modelMapper.map(propertyDTO, Property.class);
+        Property property = propertyMapper.fromCreateDto(propertyDTO);
         Property savedProperty = propertyRepository.save(property);
 
         log.info("Property created successfully with ID: {}", savedProperty.getId());
@@ -68,17 +77,18 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     @CacheEvict(value = "properties", allEntries = true)
+    @Auditable(action = "CREATE_PROPERTIES", entity = "Property")
     public void createProperties(List<PropertyDTO> propertyDTOs) {
         log.info("Batch creating {} properties", propertyDTOs.size());
 
-        UserDTO currentUser = baseService.getCurrentUser();
+        UserDTO currentUser = SecurityUtils.getCurrentUserDTO().orElseThrow(() -> new AccessDeniedException("User not authenticated"));
 
         List<Property> properties = propertyDTOs.stream()
                 .peek(dto -> {
                     propertyValidator.validate(dto);
                     dto.setManagedBy(currentUser.getId());
                 })
-                .map(dto -> modelMapper.map(dto, Property.class))
+                .map(propertyMapper::fromCreateDto)
                 .collect(Collectors.toList());
 
         List<Property> savedProperties = propertyRepository.saveAll(properties);
@@ -87,18 +97,6 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     // ========== Read Operations ==========
-
-    @Override
-    @Cacheable(value = "properties", key = "#id")
-    @Transactional(readOnly = true)
-    public PropertyDTO getPropertyById(Long id) throws EntityNotFoundException {
-        log.debug("Fetching property with ID: {}", id);
-
-        Property property = propertyRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Property not found with ID: " + id));
-
-        return convertToDto(property);
-    }
 
     @Override
     @Cacheable(value = "properties", key = "'all-' + #pageable.pageNumber + '-' + #pageable.pageSize")
@@ -141,32 +139,31 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     @CacheEvict(value = "properties", allEntries = true)
-    public PropertyDTO updateProperty(Long id, PropertyDTO propertyDTO) throws EntityNotFoundException {
-        log.info("Updating property with ID: {}", id);
+    @Auditable(action = "UPDATE_PROPERTY", entity = "Property")
+    public PropertyDTO update(PropertyDTO propertyDTO) {
+        log.info("Updating property with ID: {}", propertyDTO.getId());
         propertyValidator.validate(propertyDTO);
 
-        Property existingProperty = propertyRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Property not found with ID: " + id));
+        Property existingProperty = findEntityById(propertyDTO.getId());
 
-        modelMapper.map(propertyDTO, existingProperty);
+        propertyMapper.updateFromUpdateDto(propertyDTO, existingProperty);
         Property updatedProperty = propertyRepository.save(existingProperty);
 
-        log.info("Property updated successfully: {}", id);
+        log.info("Property updated successfully: {}", propertyDTO.getId());
         return convertToDto(updatedProperty);
     }
 
     @Override
     @CacheEvict(value = "properties", allEntries = true)
+    @Auditable(action = "UPDATE_PROPERTIES", entity = "Property")
     public void updateProperties(List<PropertyDTO> propertyDTOs) {
         log.info("Batch updating {} properties", propertyDTOs.size());
 
         List<Property> updatedProperties = propertyDTOs.stream()
                 .peek(propertyValidator::validate)
                 .map(dto -> {
-                    Property property = propertyRepository.findById(dto.getId())
-                            .orElseThrow(() -> new EntityNotFoundException(
-                                    "Property not found with ID: " + dto.getId()));
-                    modelMapper.map(dto, property);
+                    Property property = findEntityById(dto.getId());
+                    propertyMapper.updateFromUpdateDto(dto, property);
                     return property;
                 })
                 .collect(Collectors.toList());
@@ -180,20 +177,7 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     @CacheEvict(value = "properties", allEntries = true)
-    public void deleteProperty(Long id) throws EntityNotFoundException {
-        log.info("Deleting property with ID: {}", id);
-
-        if (!propertyRepository.existsById(id)) {
-            throw new EntityNotFoundException("Property not found with ID: " + id);
-        }
-
-        propertyRepository.deleteById(id);
-
-        log.info("Property deleted successfully: {}", id);
-    }
-
-    @Override
-    @CacheEvict(value = "properties", allEntries = true)
+    @Auditable(action = "DELETE_PROPERTIES", entity = "Property")
     public void deleteProperties(List<Long> ids) {
         log.info("Batch deleting {} properties", ids.size());
 
@@ -299,7 +283,7 @@ public class PropertyServiceImpl implements PropertyService {
     // ========== Private Helper Methods ==========
 
     private PropertyDTO convertToDto(Property property) {
-        PropertyDTO propertyDTO = modelMapper.map(property, PropertyDTO.class);
+        PropertyDTO propertyDTO = propertyMapper.toDto(property);
         userEnrichmentService.enrichPropertyDTOWithUserDetails(property, propertyDTO);
         return propertyDTO;
     }
@@ -334,5 +318,10 @@ public class PropertyServiceImpl implements PropertyService {
                 totalActualIncome,
                 totalPotentialIncome
         );
+    }
+
+    @Override
+    public Class<Property> getEntityClass() {
+        return Property.class;
     }
 }

@@ -1,7 +1,9 @@
-package com.proveritus.propertyservice.audit.repository;
+package com.proveritus.cloudutility.audit.repository;
 
-import com.proveritus.propertyservice.audit.entity.AuditLog;
+import com.proveritus.cloudutility.audit.entity.AuditLog;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
 }

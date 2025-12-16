@@ -5,20 +5,28 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
 @FeignClient(name = "user-service")
 public interface UserClient {
 
-    @GetMapping("/api/users/{id}")
-    UserDTO getUserById(@PathVariable("id") Long id);
+    @GetMapping("/api/users/me")
+    UserDTO getCurrentUser();
 
-    @GetMapping("/api/users/by-username")
-    UserDTO getUserByUsername(@RequestParam("username") String username);
+    @GetMapping("/api/users/{userId}")
+    UserDTO getUserById(@PathVariable("userId") Long userId);
 
-    @PostMapping("/api/users/by-ids")
-    List<UserDTO> getUsersByIds(@RequestBody List<Long> ids);
+    @GetMapping("/api/users")
+    List<UserDTO> getAllUsers();
+
+    @PutMapping("/api/users")
+    UserDTO updateUser(@RequestBody UserDTO userDTO);
+
+    @PostMapping("/api/users/{userId}/expire-password")
+    void expirePassword(@PathVariable("userId") Long userId);
 }
+
+

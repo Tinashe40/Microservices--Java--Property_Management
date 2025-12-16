@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.unit.dto;
 
 import com.proveritus.cloudutility.enums.*;
-
+import com.proveritus.cloudutility.jpa.Updatable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @Data
-public class UnitDTO {
+public class UnitDTO implements Updatable {
 
     private Long id;
 

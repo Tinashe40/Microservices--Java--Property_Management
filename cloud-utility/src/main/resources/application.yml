@@ -1,3 +1,10 @@
 spring:
   application:
     name: cloud-utility
+
+jwt:
+  secret: ${JWT_SECRET:db3081ad709552e4653b77350467fd7bac5d5d3c926338003acdf7a2b7e409aba9d2eb910a0bc9f5b86e818a1ce9719d690de4209c0ee5e50d28eee8d2154048}
+  expiration-in-ms: ${JWT_EXPIRATION:5400000}
+  issuer: property-management-system
+  audience: proveritus-app
+

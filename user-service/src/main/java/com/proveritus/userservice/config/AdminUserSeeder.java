@@ -3,7 +3,7 @@ package com.proveritus.userservice.config;
 import com.proveritus.cloudutility.security.Permissions;
 import com.proveritus.userservice.auth.domain.User;
 import com.proveritus.userservice.userManager.domain.UserRepository;
-import com.proveritus.userservice.userRoles.domain.*;
+import com.proveritus.userservice.userGroups.domain.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -18,7 +18,7 @@ import java.util.*;
 public class AdminUserSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    private final UserGroupRepository userGroupRepository;
     private final PasswordEncoder passwordEncoder;
     private final PermissionRepository permissionRepository;
 
@@ -26,7 +26,7 @@ public class AdminUserSeeder implements CommandLineRunner {
     public void run(String... args) {
         try {
             createPermissions();
-            createAdminRole();
+            createAdminUserGroup();
             createAdminUser();
             log.info("Admin user seeding completed successfully");
 
@@ -36,19 +36,18 @@ public class AdminUserSeeder implements CommandLineRunner {
     }
 
     private void createPermissions() {
-
-        List<String> permissionNames = List.of(
-                "user:create", "user:read", "user:update", "user:delete",
-                "user:reset-password", "user:assign-roles", "user:deactivate",
-                "role:create", "role:read", "role:update", "role:delete",
-                "permission:create", "permission:read", "permission:update",
-                "permission:delete", "permission:assign-roles", "permission:deactivate",
-                "property:create", "property:read", "property:update", "property:delete",
-                "property:count:read", "system:stats:read",
-                "leasing_agent:read", "leasing_agent:update_occupancy",
-                "maintenance_staff:read",
-                "floor:create", "floor:read", "floor:update", "floor:delete",
-                "unit:create", "unit:read", "unit:update", "unit:delete"
+        List<String> permissionNames = Arrays.asList(
+                Permissions.User.CREATE, Permissions.User.READ, Permissions.User.UPDATE, Permissions.User.DELETE,
+                Permissions.User.RESET_PASSWORD, Permissions.User.ASSIGN_GROUPS, Permissions.User.DEACTIVATE,
+                Permissions.UserGroup.CREATE, Permissions.UserGroup.READ, Permissions.UserGroup.UPDATE, Permissions.UserGroup.DELETE,
+                Permissions.Permission.CREATE, Permissions.Permission.READ, Permissions.Permission.UPDATE,
+                Permissions.Permission.DELETE, Permissions.Permission.ASSIGN_GROUPS, Permissions.Permission.DEACTIVATE,
+                Permissions.Property.CREATE, Permissions.Property.READ, Permissions.Property.UPDATE, Permissions.Property.DELETE,
+                Permissions.Property.COUNT_READ, Permissions.System.STATS_READ,
+                Permissions.LeasingAgent.READ, Permissions.LeasingAgent.UPDATE_OCCUPANCY,
+                Permissions.MaintenanceStaff.READ,
+                Permissions.Floor.CREATE, Permissions.Floor.READ, Permissions.Floor.UPDATE, Permissions.Floor.DELETE,
+                Permissions.Unit.CREATE, Permissions.Unit.READ, Permissions.Unit.UPDATE, Permissions.Unit.DELETE
         );
 
         permissionNames.forEach(this::createPermissionIfNotExists);
@@ -73,21 +72,21 @@ public class AdminUserSeeder implements CommandLineRunner {
 
 
 
-    private void createAdminRole() {
+    private void createAdminUserGroup() {
 
         Set<Permission> allPermissions = new HashSet<>(permissionRepository.findAll());
 
 
 
-        roleRepository.findByName("ADMIN").orElseGet(() -> {
+        userGroupRepository.findByName("ADMIN").orElseGet(() -> {
 
-            Role adminRole = new Role("ADMIN");
+            UserGroup adminUserGroup = new UserGroup("ADMIN");
 
-            adminRole.setPermissions(allPermissions);
+            adminUserGroup.setPermissions(allPermissions);
 
-            Role saved = roleRepository.save(adminRole);
+            UserGroup saved = userGroupRepository.save(adminUserGroup);
 
-            log.info("Created ADMIN role with {} permissions", allPermissions.size());
+            log.info("Created ADMIN user group with {} permissions", allPermissions.size());
 
             return saved;
 
@@ -99,9 +98,9 @@ public class AdminUserSeeder implements CommandLineRunner {
 
     private void createAdminUser() {
 
-        Role adminRole = roleRepository.findByName("ADMIN")
+        UserGroup adminUserGroup = userGroupRepository.findByName("ADMIN")
 
-                .orElseThrow(() -> new IllegalStateException("ADMIN role not found"));
+                .orElseThrow(() -> new IllegalStateException("ADMIN user group not found"));
 
 
 
@@ -109,17 +108,17 @@ public class AdminUserSeeder implements CommandLineRunner {
 
                 user -> {
 
-                    if (user.getRoles().stream().noneMatch(role -> "ADMIN".equals(role.getName()))) {
+                    if (user.getUserGroups().stream().noneMatch(userGroup -> "ADMIN".equals(userGroup.getName()))) {
 
-                        user.getRoles().add(adminRole);
+                        user.getUserGroups().add(adminUserGroup);
 
                         userRepository.save(user);
 
-                        log.info("Added ADMIN role to existing user: {}", user.getUsername());
+                        log.info("Added ADMIN user group to existing user: {}", user.getUsername());
 
                     } else {
 
-                        log.info("User {} already has ADMIN role", user.getUsername());
+                        log.info("User {} already has ADMIN user group", user.getUsername());
 
                     }
 
@@ -136,7 +135,7 @@ public class AdminUserSeeder implements CommandLineRunner {
                     adminUser.setEmail("tinashemutero40@gmail.com");
                     adminUser.setPhoneNumber("0785529900");
                     adminUser.setPassword(passwordEncoder.encode("sudo0047"));
-                    adminUser.setRoles(Set.of(adminRole));
+                    adminUser.setUserGroups(Set.of(adminUserGroup));
                     adminUser.setEnabled(true);
                     adminUser.setAccountNonExpired(true);
                     adminUser.setAccountNonLocked(true);
@@ -156,5 +155,3 @@ public class AdminUserSeeder implements CommandLineRunner {
     }
 
 }
-
-

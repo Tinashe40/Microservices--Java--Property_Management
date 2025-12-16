@@ -1,12 +1,9 @@
 package com.proveritus.cloudutility.exception;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import jakarta.validation.ConstraintViolation;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -25,8 +22,7 @@ public class ApiError {
     private String message;
     private String debugMessage;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
-    private LocalDateTime timestamp;
+    private final LocalDateTime timestamp;
 
     private List<ApiSubError> subErrors;
 
@@ -105,22 +101,5 @@ public class ApiError {
     public void addValidationErrors(Set<ConstraintViolation<?>> constraintViolations) {
         constraintViolations.forEach(this::addValidationError);
     }
-
-    public interface ApiSubError {
-    }
-
-    @Data
-    @EqualsAndHashCode
-    @AllArgsConstructor
-    public static class ApiValidationError implements ApiSubError {
-        private String object;
-        private String field;
-        private Object rejectedValue;
-        private String message;
-
-        ApiValidationError(String object, String message) {
-            this.object = object;
-            this.message = message;
-        }
-    }
 }
+

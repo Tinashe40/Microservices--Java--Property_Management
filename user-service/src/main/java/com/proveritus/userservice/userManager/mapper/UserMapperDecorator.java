@@ -1,16 +1,18 @@
 package com.proveritus.userservice.userManager.mapper;
 
-import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
+import com.proveritus.cloudutility.dto.UserDTO;
 import com.proveritus.userservice.auth.domain.User;
-import com.proveritus.userservice.userRoles.domain.Role;
-import com.proveritus.userservice.userRoles.domain.RoleRepository;
+
+import com.proveritus.userservice.userGroups.domain.UserGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
 
+@Component
 public abstract class UserMapperDecorator implements UserMapper {
 
     @Autowired
@@ -21,16 +23,19 @@ public abstract class UserMapperDecorator implements UserMapper {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private RoleRepository roleRepository;
+    private UserGroupRepository userGroupRepository;
 
     @Override
-    public com.proveritus.cloudutility.dto.UserDTO toDto(User user) {
-        com.proveritus.cloudutility.dto.UserDTO userDTO = delegate.toDto(user);
-        if (user.getRoles() != null) {
-            Set<String> permissions = new HashSet<>();
-            user.getRoles().forEach(role -> role.getPermissions().forEach(permission -> permissions.add(permission.getName())));
-            userDTO.setPermissions(permissions);
-        }
-        return userDTO;
+    public UserDTO toDto(User user) {
+        UserDTO userDTO = delegate.toDto(user);
+            if (user.getUserGroups() != null) {
+                Set<String> permissions = new HashSet<>();
+                user.getUserGroups().forEach(userGroup -> userGroup.getPermissions().forEach(permission -> permissions.add(permission.getName())));
+                if(user.getPermissions() != null){
+                    user.getPermissions().forEach(permission -> permissions.add(permission.getName()));
+                }
+                userDTO.setPermissions(permissions);
+            }
+            return userDTO;
     }
 }

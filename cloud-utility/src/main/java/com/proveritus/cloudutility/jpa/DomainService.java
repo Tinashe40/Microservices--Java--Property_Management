@@ -7,8 +7,8 @@ import java.util.Collection;
 
 /**
  * A generic service interface for CRUD operations.
- *
- * @param <T> The entity type.
+
+ * @param <T> The domain type.
  * @param <C> The create DTO/command type.
  * @param <U> The update DTO/command type.
  * @param <D> The response DTO type.
@@ -18,18 +18,18 @@ public interface DomainService<T, C, U extends Updatable, D> {
     D create(C createCommand);
 
     /**
-     * Updates an existing entity.
+     * Updates an existing domain.
      *
      * @param updateCommand The DTO/command for update.
-     * @return The DTO of the updated entity.
+     * @return The DTO of the updated domain.
      */
     D update(U updateCommand);
 
     /**
-     * Finds an entity by its ID.
+     * Finds an domain by its ID.
      *
-     * @param id The ID of the entity.
-     * @return The DTO of the found entity.
+     * @param id The ID of the domain.
+     * @return The DTO of the found domain.
      */
     D findById(Long id);
 
@@ -49,9 +49,9 @@ public interface DomainService<T, C, U extends Updatable, D> {
     Page<D> findAll(Pageable pageable);
 
     /**
-     * Deletes an entity by its ID.
+     * Deletes an domain by its ID.
      *
-     * @param id The ID of the entity to delete.
+     * @param id The ID of the domain to delete.
      */
     void deleteById(Long id);
 

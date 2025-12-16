@@ -3,6 +3,7 @@ package com.proveritus.userservice.userManager.service.impl;
 import com.proveritus.cloudutility.security.CustomPrincipal;
 import com.proveritus.userservice.auth.domain.User;
 import com.proveritus.userservice.userManager.domain.UserRepository;
+import com.proveritus.userservice.passwordManager.service.PasswordPolicyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final PasswordPolicyService passwordPolicyService;
 
     @Override
     @Transactional(readOnly = true)
@@ -54,10 +57,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     private CustomPrincipal createPrincipal(User user) {
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .flatMap(role -> role.getPermissions().stream())
+        List<GrantedAuthority> authorities = user.getUserGroups().stream()
+                .flatMap(userGroup -> userGroup.getPermissions().stream())
                 .map(permission -> new SimpleGrantedAuthority(permission.getName()))
                 .collect(Collectors.toList());
+
+        authorities.addAll(user.getPermissions().stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.getName()))
+                .collect(Collectors.toList()));
+
+        boolean credentialsNonExpired = isCredentialsNonExpired(user);
 
         return new CustomPrincipal(
                 user.getId(),
@@ -68,7 +77,18 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.isEnabled(),
                 user.isAccountNonExpired(),
                 user.isAccountNonLocked(),
-                user.isCredentialsNonExpired()
+                credentialsNonExpired
         );
+    }
+
+    private boolean isCredentialsNonExpired(User user) {
+        if (user.getPasswordLastChanged() == null) {
+            return true;
+        }
+        int passwordExpirationDays = passwordPolicyService.getPasswordPolicy().getPasswordExpirationDays();
+        if (passwordExpirationDays <= 0) {
+            return true;
+        }
+        return user.getPasswordLastChanged().plusDays(passwordExpirationDays).isAfter(LocalDateTime.now());
     }
 }

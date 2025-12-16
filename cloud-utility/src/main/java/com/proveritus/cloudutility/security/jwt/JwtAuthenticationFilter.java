@@ -1,4 +1,4 @@
-package com.proveritus.cloudutility.security;
+package com.proveritus.cloudutility.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            boolean isBlacklisted = tokenBlacklist.isPresent() && tokenBlacklist.get().isTokenBlacklisted(jwt);
+            boolean isBlacklisted = StringUtils.hasText(jwt) && tokenBlacklist.isPresent() && tokenBlacklist.get().isTokenBlacklisted(jwt);
             if (StringUtils.hasText(jwt) && !isBlacklisted && tokenProvider.isTokenValid(jwt)) {
                 String username = tokenProvider.getUsernameFromJWT(jwt);
 

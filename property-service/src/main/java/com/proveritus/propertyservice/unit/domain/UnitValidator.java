@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.unit.domain;
 
 import com.proveritus.cloudutility.enums.RentType;
-import com.proveritus.cloudutility.exception.EntityNotFoundException;
+import com.proveritus.cloudutility.exception.*;
 import com.proveritus.propertyservice.floor.domain.FloorRepository;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
 import com.proveritus.propertyservice.unit.dto.UnitDTO;
@@ -45,11 +45,11 @@ public class UnitValidator {
         }
 
         if (!propertyRepository.existsById(unitDTO.getPropertyId())) {
-            throw new EntityNotFoundException("Property not found with id: " + unitDTO.getPropertyId());
+            throw new ResourceNotFoundException("Property not found with id: " + unitDTO.getPropertyId());
         }
 
         if (unitDTO.getFloorId() != null && !floorRepository.existsById(unitDTO.getFloorId())) {
-            throw new EntityNotFoundException("Floor not found with id: " + unitDTO.getFloorId());
+            throw new ResourceNotFoundException("Floor not found with id: " + unitDTO.getFloorId());
         }
     }
 }

@@ -18,7 +18,7 @@ public class JpaAuditingConfig {
         return new AuditorAwareImpl();
     }
 
-    public static class AuditorAwareImpl implements AuditorAware<String> {
+    private static class AuditorAwareImpl implements AuditorAware<String> {
         @Override
         public Optional<String> getCurrentAuditor() {
             return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())

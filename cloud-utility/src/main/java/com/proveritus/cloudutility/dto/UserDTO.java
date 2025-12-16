@@ -1,4 +1,4 @@
-package com.proveritus.userservice.dto;
+package com.proveritus.cloudutility.dto;
 
 import lombok.Data;
 

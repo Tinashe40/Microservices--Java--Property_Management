@@ -1,69 +1,84 @@
 package com.proveritus.userservice.userManager.service.impl;
 
+import com.proveritus.cloudutility.audit.annotation.Auditable;
 import com.proveritus.cloudutility.dto.UserDTO;
-import com.proveritus.cloudutility.jpa.DomainServiceImpl;
-import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
-import com.proveritus.userservice.auth.domain.User;
 import com.proveritus.cloudutility.exception.RegistrationException;
+import com.proveritus.cloudutility.exception.ResourceNotFoundException;
+import com.proveritus.cloudutility.jpa.DomainServiceImpl;
+import com.proveritus.cloudutility.passwordManager.dto.ResetPasswordRequest;
+import com.proveritus.userservice.auth.domain.User;
+import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
+import com.proveritus.userservice.email.EmailService;
+import com.proveritus.userservice.passwordManager.service.PasswordService;
+import com.proveritus.userservice.userGroups.domain.Permission;
+import com.proveritus.userservice.userGroups.domain.PermissionRepository;
 import com.proveritus.userservice.userManager.domain.UserRepository;
-import com.proveritus.userservice.userManager.dto.ResetPasswordRequest;
 import com.proveritus.userservice.userManager.dto.UpdateUserDTO;
 import com.proveritus.userservice.userManager.mapper.UserMapper;
 import com.proveritus.userservice.userManager.service.UserService;
-import com.proveritus.userservice.userRoles.domain.Role;
-import com.proveritus.userservice.userRoles.domain.RoleRepository;
-import com.proveritus.userservice.email.EmailService;
-import com.proveritus.cloudutility.exception.UserNotFoundException;
+import com.proveritus.userservice.userManager.validation.UserValidator;
+import com.proveritus.userservice.userGroups.domain.UserGroup;
+import com.proveritus.userservice.userGroups.domain.UserGroupRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.proveritus.cloudutility.security.util.SecurityUtils.getCurrentUserId;
+import static com.proveritus.cloudutility.security.util.SecurityUtils.getCurrentUsername;
+
 @Slf4j
 @Service
 @Transactional
 public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, UpdateUserDTO, UserDTO> implements UserService {
-
+    @Autowired
     private final UserRepository userRepository;
+    @Autowired
     private final UserMapper userMapper;
-    private final RoleRepository roleRepository;
+    private final UserGroupRepository userGroupRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final UserValidator userValidator;
+    private final PermissionRepository permissionRepository;
+    private final PasswordService passwordService;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, RoleRepository roleRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, UserGroupRepository userGroupRepository, PasswordEncoder passwordEncoder, EmailService emailService, UserValidator userValidator, PermissionRepository permissionRepository, PasswordService passwordService) {
         super(userRepository, userMapper);
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-        this.roleRepository = roleRepository;
+        this.userGroupRepository = userGroupRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.userValidator = userValidator;
+        this.permissionRepository = permissionRepository;
+        this.passwordService = passwordService;
     }
 
+
+
     @Override
+    @Auditable(action = "REGISTER_USER", entity = "User")
     public UserDTO registerUser(SignUpRequest signUpRequest) {
         log.debug("Request to register user : {}", signUpRequest.getUsername());
 
-        if (userRepository.existsByUsernameAndDeletedFalse(signUpRequest.getUsername())) {
-            throw new RegistrationException("Username is already taken!");
-        }
-
-        if (userRepository.existsByEmailAndDeletedFalse(signUpRequest.getEmail())) {
-            throw new RegistrationException("Email is already in use!");
+        try {
+            userValidator.validate(null, userRepository.existsByUsernameAndDeletedFalse(signUpRequest.getUsername()), userRepository.existsByEmailAndDeletedFalse(signUpRequest.getEmail()));
+        } catch (IllegalArgumentException e) {
+            throw new RegistrationException(e.getMessage());
         }
 
         User user = userMapper.fromCreateDto(signUpRequest);
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+        user.setPasswordLastChanged(LocalDateTime.now());
         User savedUser = userRepository.save(user);
         log.debug("Saved user : {}", savedUser);
 
@@ -73,15 +88,10 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
     @Override
     @Transactional(readOnly = true)
     public UserDTO getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
+        String username = getCurrentUsername()
+                .orElseThrow(() -> new ResourceNotFoundException("User not found in security context"));
         return getUserByUsername(username)
-                .orElseThrow(() -> new com.proveritus.cloudutility.exception.UserNotFoundException("User not found with username: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
     }
 
     @Override
@@ -96,64 +106,88 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
     @Transactional(readOnly = true)
     public List<UserDTO> getUsersByIds(List<Long> ids) {
         log.debug("Request to get Users by IDs: {}", ids);
-        return userMapper.toDto(userRepository.findAllById(ids));
+        return userRepository.findAllById(ids).stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    @CacheEvict(value = "users", allEntries = true) // Evict all users cache on delete
-    public void deleteUser(Long id) {
+    @CacheEvict(value = "users", allEntries = true)
+    @Auditable(action = "DELETE_USER", entity = "User")
+    public void deleteById(Long id) {
         log.debug("Request to delete User : {}", id);
-        User user = findEntityById(id);
-        user.setDeleted(true);
-        userRepository.save(user);
+        super.deleteById(id);
     }
 
     @Override
     @Transactional(readOnly = true)
     public boolean isCurrentUser(Long id) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
-        return userRepository.findByUsernameAndDeletedFalse(username).map(user -> user.getId().equals(id)).orElse(false);
+        return getCurrentUserId()
+                .map(currentUserId -> currentUserId.equals(id))
+                .orElse(false);
     }
 
     @Override
-    @CacheEvict(value = "users", allEntries = true) // Evict all users cache on role change
-    public UserDTO assignRolesToUser(Long userId, Set<String> roleNames) {
-        log.debug("Request to assign roles to user : {}", userId);
+    @CacheEvict(value = "users", allEntries = true)
+    @Auditable(action = "ASSIGN_GROUPS", entity = "User")
+    public UserDTO assignUserGroupsToUser(Long userId, Set<String> groupNames) {
+        log.debug("Request to assign groups to user : {}", userId);
         User user = findEntityById(userId);
 
-        Set<String> upperCaseRoleNames = roleNames.stream().map(String::toUpperCase).collect(Collectors.toSet());
-        Set<Role> roles = roleRepository.findByNameIn(upperCaseRoleNames);
+        Set<String> upperCaseGroupNames = groupNames.stream().map(String::toUpperCase).collect(Collectors.toSet());
+        Set<UserGroup> userGroups = userGroupRepository.findByNameIn(upperCaseGroupNames);
 
-        if (roles.size() != roleNames.size()) {
-            log.warn("Could not find all roles for user {}", userId);
+        if (userGroups.size() != groupNames.size()) {
+            log.warn("Could not find all groups for user {}", userId);
         }
-        user.setRoles(roles);
+        user.setUserGroups(userGroups);
 
         User result = userRepository.save(user);
-        log.debug("Updated user roles : {}", result);
+        log.debug("Updated user groups : {}", result);
 
         return userMapper.toDto(result);
     }
 
     @Override
-    public Page<UserDTO> findAll(Pageable pageable) {
-        return userRepository.findAllByDeletedFalse(pageable).map(userMapper::toDto);
-    }
+    @CacheEvict(value = "users", allEntries = true)
+    @Auditable(action = "ASSIGN_PERMISSIONS", entity = "User")
+    public UserDTO assignPermissionsToUser(Long userId, Set<String> permissionNames) {
+        log.debug("Request to assign permissions to user : {}", userId);
+        User user = findEntityById(userId);
 
-    @Override
-    public UserDTO findById(Long id) {
-        return userRepository.findByIdAndDeletedFalse(id).map(userMapper::toDto)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+        Set<Permission> permissions = permissionRepository.findByNameIn(permissionNames);
+        if (permissions.size() != permissionNames.size()) {
+            log.warn("Could not find all permissions for user {}", userId);
+        }
+
+        user.getPermissions().addAll(permissions);
+        User result = userRepository.save(user);
+        log.debug("Updated user permissions : {}", result);
+
+        return userMapper.toDto(result);
     }
 
     @Override
     @CacheEvict(value = "users", allEntries = true)
+    @Auditable(action = "REMOVE_PERMISSIONS", entity = "User")
+    public UserDTO removePermissionsFromUser(Long userId, Set<String> permissionNames) {
+        log.debug("Request to remove permissions from user : {}", userId);
+        User user = findEntityById(userId);
+
+        Set<Permission> permissionsToRemove = user.getPermissions().stream()
+                .filter(permission -> permissionNames.contains(permission.getName()))
+                .collect(Collectors.toSet());
+
+        user.getPermissions().removeAll(permissionsToRemove);
+        User result = userRepository.save(user);
+        log.debug("Updated user permissions : {}", result);
+
+        return userMapper.toDto(result);
+    }
+
+    @Override
+    @CacheEvict(value = "users", allEntries = true)
+    @Auditable(action = "DEACTIVATE_USER", entity = "User")
     public void deactivateUser(Long id) {
         log.debug("Request to deactivate User : {}", id);
         User user = findEntityById(id);
@@ -163,6 +197,7 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
 
     @Override
     @CacheEvict(value = "users", allEntries = true)
+    @Auditable(action = "ACTIVATE_USER", entity = "User")
     public void activateUser(Long id) {
         log.debug("Request to activate User : {}", id);
         User user = findEntityById(id);
@@ -171,38 +206,21 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
     }
 
     @Override
-    public void changePassword(com.proveritus.userservice.userManager.dto.ChangePasswordRequest request) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
-        User user = userRepository.findByUsernameAndDeletedFalse(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
-
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
-
-        emailService.sendPasswordChangedEmail(user.getEmail(), user.getUsername());
-    }
-
+    @Auditable(action = "RESET_PASSWORD", entity = "User")
     public void resetPassword(Long id, ResetPasswordRequest request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Passwords do not match");
-        }
-
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
+        passwordService.adminResetPassword(id, request);
     }
 
     @Override
     public long countAllUsers() {
         return userRepository.count();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User getUserEntityById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
     @Override

@@ -1,8 +1,8 @@
 package com.proveritus.propertyservice.property.api;
 
-import com.proveritus.cloudutility.security.Permissions;
+import com.proveritus.cloudutility.audit.annotation.Auditable;
 import com.proveritus.cloudutility.enums.PropertyType;
-import com.proveritus.propertyservice.audit.annotation.Auditable;
+
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
 import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
 import com.proveritus.propertyservice.property.dto.PropertyFilterDTO;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/properties")
+@RequestMapping("/api/properties")
 @RequiredArgsConstructor
 @Tag(name = "Properties", description = "APIs for managing properties")
 @SecurityRequirement(name = "bearerAuth")
@@ -35,7 +35,7 @@ public class PropertyRestController {
 
     @Auditable
     @PostMapping
-    @PreAuthorize("hasAuthority('property:create')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).CREATE)")
     @Operation(summary = "Create a new property")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Property created successfully"),
@@ -44,12 +44,12 @@ public class PropertyRestController {
     })
     public ResponseEntity<PropertyDTO> createProperty(@Valid @RequestBody PropertyDTO propertyDTO) {
         log.info("Creating property: {}", propertyDTO.getName());
-        PropertyDTO createdProperty = propertyService.createProperty(propertyDTO);
+        PropertyDTO createdProperty = propertyService.create(propertyDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProperty);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('property:read', 'leasing_agent:read', 'maintenance_staff:read')")
+    @PreAuthorize("hasAnyAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).READ, T(com.proveritus.cloudutility.security.Permissions.LeasingAgent).READ, T(com.proveritus.cloudutility.security.Permissions.MaintenanceStaff).READ)")
     @Operation(summary = "Get a property by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Property found"),
@@ -58,11 +58,11 @@ public class PropertyRestController {
     public ResponseEntity<PropertyDTO> getPropertyById(
             @Parameter(description = "ID of the property to retrieve") @PathVariable Long id) {
         log.debug("Fetching property with ID: {}", id);
-        return ResponseEntity.ok(propertyService.getPropertyById(id));
+        return ResponseEntity.ok(propertyService.findById(id));
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('property:read', 'leasing_agent:read', 'maintenance_staff:read')")
+    @PreAuthorize("hasAnyAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).READ, T(com.proveritus.cloudutility.security.Permissions.LeasingAgent).READ, T(com.proveritus.cloudutility.security.Permissions.MaintenanceStaff).READ)")
     @Operation(summary = "Get all properties with optional filtering and pagination")
     public ResponseEntity<Page<PropertyDTO>> getProperties(
             @RequestParam(required = false) PropertyType propertyType,
@@ -78,7 +78,7 @@ public class PropertyRestController {
     }
 
     @GetMapping("/by-manager/{managerId}")
-    @PreAuthorize("hasAuthority('property:read')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).READ)")
     @Operation(summary = "Get properties by manager ID")
     public ResponseEntity<Page<PropertyDTO>> getPropertiesByManager(
             @PathVariable Long managerId,
@@ -89,7 +89,7 @@ public class PropertyRestController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('property:update')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).UPDATE)")
     @Operation(summary = "Update an existing property")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Property updated successfully"),
@@ -101,11 +101,12 @@ public class PropertyRestController {
             @Parameter(description = "ID of the property to update") @PathVariable Long id,
             @Valid @RequestBody PropertyDTO propertyDTO) {
         log.info("Updating property with ID: {}", id);
-        return ResponseEntity.ok(propertyService.updateProperty(id, propertyDTO));
+        propertyDTO.setId(id);
+        return ResponseEntity.ok(propertyService.update(propertyDTO));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('property:delete')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).DELETE)")
     @Operation(summary = "Delete a property by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Property deleted successfully"),
@@ -115,12 +116,12 @@ public class PropertyRestController {
     public ResponseEntity<Void> deleteProperty(
             @Parameter(description = "ID of the property to delete") @PathVariable Long id) {
         log.info("Deleting property with ID: {}", id);
-        propertyService.deleteProperty(id);
+        propertyService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/search")
-    @PreAuthorize("hasAnyAuthority('property:read', 'leasing_agent:read', 'maintenance_staff:read')")
+    @PreAuthorize("hasAnyAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).READ, T(com.proveritus.cloudutility.security.Permissions.LeasingAgent).READ, T(com.proveritus.cloudutility.security.Permissions.MaintenanceStaff).READ)")
     @Operation(summary = "Search properties by filter")
     public ResponseEntity<Page<PropertyDTO>> searchPropertiesByFilter(
             @RequestBody PropertyFilterDTO filter,
@@ -131,7 +132,7 @@ public class PropertyRestController {
     }
 
     @GetMapping("/{id}/stats")
-    @PreAuthorize("hasAuthority('property:read')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).READ)")
     @Operation(summary = "Get statistics for a property")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
@@ -144,7 +145,7 @@ public class PropertyRestController {
     }
 
     @GetMapping("/count")
-    @PreAuthorize("hasAuthority('property:count:read')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).COUNT_READ)")
     @Operation(summary = "Get total number of properties")
     public ResponseEntity<Long> getPropertiesCount() {
         log.debug("Fetching properties count");
@@ -152,7 +153,7 @@ public class PropertyRestController {
     }
 
     @GetMapping("/stats/system-wide")
-    @PreAuthorize("hasAuthority('system:stats:read')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.System).STATS_READ)")
     @Operation(summary = "Get system-wide statistics")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully")
@@ -163,7 +164,7 @@ public class PropertyRestController {
     }
 
     @GetMapping("/count-by-type")
-    @PreAuthorize("hasAuthority('property:count:read')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).COUNT_READ)")
     @Operation(summary = "Get total number of properties by type")
     public ResponseEntity<Long> getPropertiesCountByType(@RequestParam PropertyType propertyType) {
         log.debug("Fetching properties count by type: {}", propertyType);
@@ -171,7 +172,7 @@ public class PropertyRestController {
     }
 
     @GetMapping("/stats/system-wide-by-type")
-    @PreAuthorize("hasAuthority('system:stats:read')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.System).STATS_READ)")
     @Operation(summary = "Get system-wide statistics by property type")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully")
@@ -182,7 +183,7 @@ public class PropertyRestController {
     }
 
     @GetMapping("/by-manager/{managerId}/stats")
-    @PreAuthorize("hasAuthority('property:read')")
+    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).READ)")
     @Operation(summary = "Get statistics for properties by manager ID")
     public ResponseEntity<PropertyStatsDTO> getPropertyStatsByManager(
             @PathVariable Long managerId) {

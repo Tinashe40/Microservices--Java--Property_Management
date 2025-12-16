@@ -1,11 +1,13 @@
 package com.proveritus.cloudutility.jpa;
 
-import com.proveritus.cloudutility.exception.EntityNotFoundException;
+import com.proveritus.cloudutility.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Collection;
+
+import java.util.stream.Collectors;
 
 public abstract class DomainServiceImpl<T extends BaseEntity, C, U extends Updatable, D>
         implements DomainService<T, C, U, D> {
@@ -41,7 +43,7 @@ public abstract class DomainServiceImpl<T extends BaseEntity, C, U extends Updat
 
     public T findEntityById(Long id) {
         return baseDao.findOne(Specification.where(notDeleted()).and((root, query, cb) -> cb.equal(root.get("id"), id)))
-                .orElseThrow(() -> new EntityNotFoundException(getEntityClass().getSimpleName().concat(" record not found with id: " + id)));
+                .orElseThrow(() -> new ResourceNotFoundException(getEntityClass().getSimpleName().concat(" record not found with id: " + id)));
     }
 
     public void deleteById(Long id) {
@@ -52,7 +54,9 @@ public abstract class DomainServiceImpl<T extends BaseEntity, C, U extends Updat
 
     @Override
     public Collection<D> findAll() {
-        return entityMapper.toDto(baseDao.findAll(notDeleted()));
+        return baseDao.findAll(notDeleted()).stream()
+                .map(entityMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override

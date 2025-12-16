@@ -1,15 +1,19 @@
 package com.proveritus.userservice.auth.domain;
 
 import com.proveritus.cloudutility.jpa.BaseEntity;
-import com.proveritus.userservice.userRoles.domain.Role;
+import com.proveritus.userservice.jwt.UserToken;
+import com.proveritus.userservice.userGroups.domain.UserGroup;
+import com.proveritus.userservice.userGroups.domain.Permission;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -28,6 +32,8 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
+    private LocalDateTime passwordLastChanged;
+
     @Column(nullable = false)
     private String firstName;
 
@@ -37,10 +43,19 @@ public class User extends BaseEntity {
     private String phoneNumber;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_roles",
+    @JoinTable(name = "user_user_groups",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+            inverseJoinColumns = @JoinColumn(name = "user_group_id"))
+    private Set<UserGroup> userGroups = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_permissions",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    private Set<Permission> permissions = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserToken> tokens;
 
     private boolean enabled = true;
     private boolean accountNonExpired = true;

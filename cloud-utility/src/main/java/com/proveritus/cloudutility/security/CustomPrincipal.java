@@ -10,10 +10,12 @@ import java.util.Collection;
 public class CustomPrincipal extends User {
 
     private final Long id;
+    private final String email;
 
     public CustomPrincipal(Long id, String username, String email, String password, Collection<? extends GrantedAuthority> authorities,
                            boolean enabled, boolean accountNonExpired, boolean accountNonLocked, boolean credentialsNonExpired) {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
         this.id = id;
+        this.email = email;
     }
 }

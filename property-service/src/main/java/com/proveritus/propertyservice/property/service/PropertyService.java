@@ -1,7 +1,9 @@
 package com.proveritus.propertyservice.property.service;
 
 import com.proveritus.cloudutility.enums.PropertyType;
-import com.proveritus.cloudutility.exception.EntityNotFoundException;
+import com.proveritus.cloudutility.exception.ResourceNotFoundException;
+import com.proveritus.cloudutility.jpa.DomainService;
+import com.proveritus.propertyservice.property.domain.Property;
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
 import com.proveritus.propertyservice.property.dto.PropertyFilterDTO;
 import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
@@ -15,17 +17,9 @@ import java.util.List;
  * Service interface for property management operations.
  * Provides CRUD operations, search functionality, and statistical reporting.
  */
-public interface PropertyService {
+public interface PropertyService extends DomainService<Property, PropertyDTO, PropertyDTO, PropertyDTO> {
 
     // ========== Create Operations ==========
-
-    /**
-     * Creates a new property in the system.
-     *
-     * @param propertyDTO the property data to create
-     * @return the created property with generated ID
-     */
-    PropertyDTO createProperty(PropertyDTO propertyDTO);
 
     /**
      * Creates multiple properties in a single batch operation.
@@ -35,15 +29,6 @@ public interface PropertyService {
     void createProperties(List<PropertyDTO> propertyDTOs);
 
     // ========== Read Operations ==========
-
-    /**
-     * Retrieves a property by its ID.
-     *
-     * @param id the property ID
-     * @return the property details
-     * @throws EntityNotFoundException if property not found
-     */
-    PropertyDTO getPropertyById(Long id) throws EntityNotFoundException;
 
     /**
      * Retrieves all properties with pagination.
@@ -74,16 +59,6 @@ public interface PropertyService {
     // ========== Update Operations ==========
 
     /**
-     * Updates an existing property.
-     *
-     * @param id the property ID to update
-     * @param propertyDTO the updated property data
-     * @return the updated property
-     * @throws EntityNotFoundException if property not found
-     */
-    PropertyDTO updateProperty(Long id, PropertyDTO propertyDTO) throws EntityNotFoundException;
-
-    /**
      * Updates multiple properties in a single batch operation.
      *
      * @param propertyDTOs list of properties to update
@@ -91,14 +66,6 @@ public interface PropertyService {
     void updateProperties(List<PropertyDTO> propertyDTOs);
 
     // ========== Delete Operations ==========
-
-    /**
-     * Deletes a property by its ID.
-     *
-     * @param id the property ID to delete
-     * @throws EntityNotFoundException if property not found
-     */
-    void deleteProperty(Long id) throws EntityNotFoundException;
 
     /**
      * Deletes multiple properties in a single batch operation.
@@ -125,9 +92,9 @@ public interface PropertyService {
      *
      * @param id the property ID
      * @return property statistics including occupancy and financial data
-     * @throws EntityNotFoundException if property not found
+     * @throws ResourceNotFoundException if property not found
      */
-    PropertyStatsDTO getPropertyStats(Long id) throws EntityNotFoundException;
+    PropertyStatsDTO getPropertyStats(Long id) throws ResourceNotFoundException;
 
     /**
      * Gets the total count of all properties in the system.

@@ -8,11 +8,71 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: false
           lower-case-service-id: true
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**, /api/auth/**, /api/roles/**, /api/permissions/**
+          filters:
+#
+            - name: CircuitBreaker
+              args:
+                name: user-service
+                fallbackUri: forward:/fallback
+        - id: property-service
+          uri: lb://property-service
+          predicates:
+            - Path=/api/properties/**, /api/floors/**, /api/units/**
+          filters:
 
-jwt:
-  secret: db3081ad709552e4653b77350467fd7bac5d5d3c926338003acdf7a2b7e409aba9d2eb910a0bc9f5b86e818a1ce9719d690de4209c0ee5e50d28eee8d2154048
+            - name: CircuitBreaker
+              args:
+                name: property-service
+                fallbackUri: forward:/fallback
+
+# Resilience4j circuit breaker configuration
+resilience4j.circuitbreaker:
+  instances:
+    defaultCircuitBreaker:
+      registerHealthIndicator: true
+      slidingWindowSize: 10
+      minimumNumberOfCalls: 5
+      permittedNumberOfCallsInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 5s
+      failureRateThreshold: 50
+      eventConsumerBufferSize: 10
+
+# Security Configuration
+security:
+  jwt:
+    secret: ${JWT_SECRET:db3081ad709552e4653b77350467fd7bac5d5d3c926338003acdf7a2b7e409aba9d2eb910a0bc9f5b86e818a1ce9719d690de4209c0ee5e50d28eee8d2154048}
+    expiration-in-ms: ${JWT_EXPIRATION:5400000}
+    issuer: property-management-system
+    audience: proveritus-app
+    blacklist-check-url: http://user-service/auth/is-blacklisted
+  allowed-origins:
+    - http://localhost:3000
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+    - PATCH
+  allowed-headers:
+    - "*"
+  allow-credentials: true
+  max-age: 3600
+  public-paths:
+    - /api/auth/**
+    - /actuator/health
+    - /swagger-ui.html
+    - /swagger-ui/**
+    - /v3/api-docs/**
+    - /fallback
 
 eureka:
   client:
@@ -20,3 +80,23 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     hostname: localhost
+
+# Springdoc OpenAPI configuration
+springdoc:
+  swagger-ui:
+    urls:
+      - name: User Service
+        url: /v3/api-docs/user-service
+      - name: Property Service
+        url: /v3/api-docs/property-service
+  api-docs:
+    groups:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    com.proveritus.apigateway: INFO
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: INFO
+    reactor.netty.http.client: DEBUG
