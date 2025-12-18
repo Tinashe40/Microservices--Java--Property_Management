@@ -60,14 +60,14 @@ public class FloorServiceImpl extends DomainServiceImpl<Floor, FloorDTO, FloorDT
         return floorMapper.toDto(savedFloor);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    @PreAuthorize("isAuthenticated()")
-    public List<FloorDTO> getFloorsByPropertyId(Long propertyId) {
-        log.debug("Fetching all floors for property ID: {}", propertyId);
-        validatePropertyExists(propertyId);
-        return floorMapper.toDto(floorRepository.findByPropertyId(propertyId));
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    @PreAuthorize("isAuthenticated()")
+//    public List<FloorDTO> getFloorsByPropertyId(Long propertyId) {
+//        log.debug("Fetching all floors for property ID: {}", propertyId);
+//        validatePropertyExists(propertyId);
+//        return floorMapper.toDto(floorRepository.findByPropertyId(propertyId));
+//    }
 
     @Override
     @Transactional(readOnly = true)
@@ -195,53 +195,116 @@ public class FloorServiceImpl extends DomainServiceImpl<Floor, FloorDTO, FloorDT
                 .orElseThrow(() -> new ResourceNotFoundException("Floor not found with id: " + id));
     }
 
-    @Override
-    @PreAuthorize("hasAuthority('" + Permissions.Floor.UPDATE + "')")
-    public void updateFloorOccupancyStats(Long floorId) {
-        log.debug("Updating occupancy stats for floor ID: {}", floorId);
-        Floor floor = findEntityById(floorId);
+        @Override
+        @PreAuthorize("hasAuthority('" + Permissions.Floor.UPDATE + "')")
+        public void updateFloorOccupancyStats(Long floorId) {
 
-        long totalUnits = floorRepository.countByPropertyId(floor.getProperty().getId());
-        long occupiedUnits = floor.getUnits().stream().filter(unit -> unit.getOccupancyStatus() == OccupancyStatus.OCCUPIED).count();
+            log.debug("Updating occupancy stats for floor ID: {}", floorId);
+            Floor floor = findEntityById(floorId);
+            long totalUnits = floor.getUnits().size();
+            long occupiedUnits = floor.getUnits().stream().filter(unit -> unit.getOccupancyStatus() == OccupancyStatus.OCCUPIED).count();
+            floor.setNumberOfUnits((int) totalUnits);
+            floor.setOccupiedUnits((int) occupiedUnits);
+            floor.setVacantUnits((int) (totalUnits - occupiedUnits));
+            floorRepository.save(floor);
 
-        floor.setNumberOfUnits((int) totalUnits);
-        floor.setOccupiedUnits((int) occupiedUnits);
-        floor.setVacantUnits((int) (totalUnits - occupiedUnits));
+            log.debug("Updated occupancy stats for floor ID: {}", floorId);
 
-        floorRepository.save(floor);
-        log.debug("Updated occupancy stats for floor ID: {}", floorId);
-    }
-
-    private Property validatePropertyExists(Long propertyId) {
-        if (propertyId == null) {
-            throw new IllegalArgumentException("Property ID must not be null");
         }
 
-        return propertyRepository.findById(propertyId)
-                .orElseThrow(() -> {
-                    log.error("Property not found with ID: {}", propertyId);
-                    return new ResourceNotFoundException("Property not found with id: " + propertyId);
-                });
-    }
+    
 
-    private FloorOccupancyStats calculateOccupancyStats(Floor floor) {
-        long totalUnits = floor.getUnits().size();
-        long occupiedUnits = floor.getUnits().stream().filter(unit -> unit.getOccupancyStatus() == OccupancyStatus.OCCUPIED).count();
-        long vacantUnits = floor.getUnits().stream().filter(unit -> unit.getOccupancyStatus() == OccupancyStatus.AVAILABLE).count();
-        long reservedUnits = floor.getUnits().stream().filter(unit -> unit.getOccupancyStatus() == OccupancyStatus.RESERVED).count();
-        long notAvailableUnits = floor.getUnits().stream().filter(unit -> unit.getOccupancyStatus() == OccupancyStatus.NOT_AVAILABLE).count();
-        long underMaintenanceUnits = floor.getUnits().stream().filter(unit -> unit.getOccupancyStatus() == OccupancyStatus.UNDER_MAINTENANCE).count();
+        private Property validatePropertyExists(Long propertyId) {
 
-        double occupancyRate = totalUnits > 0 ? (occupiedUnits * 100.0) / totalUnits : 0;
-        double vacancyRate = totalUnits > 0 ? (vacantUnits * 100.0) / totalUnits : 0;
-        double reservedRate = totalUnits > 0 ? (reservedUnits * 100.0) / totalUnits : 0;
-        double notAvailableRate = totalUnits > 0 ? (notAvailableUnits * 100.0) / totalUnits : 0;
-        double underMaintenanceRate = totalUnits > 0 ? (underMaintenanceUnits * 100.0) / totalUnits : 0;
+            if (propertyId == null) {
 
-        return new FloorOccupancyStats((int) totalUnits, (int) occupiedUnits, (int) vacantUnits, (int) reservedUnits,
-                (int) notAvailableUnits, (int) underMaintenanceUnits, occupancyRate, vacancyRate,
-                reservedRate, notAvailableRate, underMaintenanceRate);
-    }
+                throw new IllegalArgumentException("Property ID must not be null");
+
+            }
+
+    
+
+            return propertyRepository.findById(propertyId)
+
+                    .orElseThrow(() -> {
+
+                        log.error("Property not found with ID: {}", propertyId);
+
+                        return new ResourceNotFoundException("Property not found with id: " + propertyId);
+
+                    });
+
+        }
+
+    
+
+        private FloorOccupancyStats calculateOccupancyStats(Floor floor) {
+
+            long totalUnits = floor.getUnits().size();
+
+            long occupiedUnits = 0;
+
+            long vacantUnits = 0;
+
+            long reservedUnits = 0;
+
+            long notAvailableUnits = 0;
+
+            long underMaintenanceUnits = 0;
+
+    
+
+            for (com.proveritus.propertyservice.unit.domain.Unit unit : floor.getUnits()) {
+
+                switch (unit.getOccupancyStatus()) {
+
+                    case OCCUPIED:
+
+                        occupiedUnits++;
+
+                        break;
+
+                    case AVAILABLE:
+
+                        vacantUnits++;
+
+                        break;
+
+                    case RESERVED:
+
+                        reservedUnits++;
+
+                        break;
+
+                    case NOT_AVAILABLE:
+
+                        notAvailableUnits++;
+
+                        break;
+
+                    case UNDER_MAINTENANCE:
+
+                        underMaintenanceUnits++;
+
+                        break;
+
+                }
+
+            }
+
+            double occupancyRate = totalUnits > 0 ? (occupiedUnits * 100.0) / totalUnits : 0;
+
+            double vacancyRate = totalUnits > 0 ? (vacantUnits * 100.0) / totalUnits : 0;
+
+            double reservedRate = totalUnits > 0 ? (reservedUnits * 100.0) / totalUnits : 0;
+
+            double notAvailableRate = totalUnits > 0 ? (notAvailableUnits * 100.0) / totalUnits : 0;
+            double underMaintenanceRate = totalUnits > 0 ? (underMaintenanceUnits * 100.0) / totalUnits : 0;
+
+            return new FloorOccupancyStats((int) totalUnits, (int) occupiedUnits, (int) vacantUnits, (int) reservedUnits,
+                    (int) notAvailableUnits, (int) underMaintenanceUnits, occupancyRate, vacancyRate,
+                    reservedRate, notAvailableRate, underMaintenanceRate);
+        }
 
     @Override
     public Class<Floor> getEntityClass() {

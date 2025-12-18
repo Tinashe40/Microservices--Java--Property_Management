@@ -1,27 +1,51 @@
 package com.proveritus.propertyservice.property.api;
 
 import com.proveritus.cloudutility.audit.annotation.Auditable;
+
 import com.proveritus.cloudutility.enums.PropertyType;
 
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
-import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
+
 import com.proveritus.propertyservice.property.dto.PropertyFilterDTO;
+
+import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
+
 import com.proveritus.propertyservice.property.dto.SystemStatsDTO;
-import com.proveritus.propertyservice.property.service.PropertyService;
+
+import com.proveritus.propertyservice.property.service.PropertyCommandService;
+
+import com.proveritus.propertyservice.property.service.PropertyQueryService;
+
+import com.proveritus.propertyservice.property.service.PropertyStatisticsService;
+
 import io.swagger.v3.oas.annotations.Operation;
+
 import io.swagger.v3.oas.annotations.Parameter;
+
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
+
 import org.springframework.data.domain.Pageable;
+
 import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -31,7 +55,9 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Properties", description = "APIs for managing properties")
 @SecurityRequirement(name = "bearerAuth")
 public class PropertyRestController {
-    private final PropertyService propertyService;
+    private final PropertyCommandService propertyCommandService;
+    private final PropertyQueryService propertyQueryService;
+    private final PropertyStatisticsService propertyStatisticsService;
 
     @Auditable
     @PostMapping
@@ -44,7 +70,7 @@ public class PropertyRestController {
     })
     public ResponseEntity<PropertyDTO> createProperty(@Valid @RequestBody PropertyDTO propertyDTO) {
         log.info("Creating property: {}", propertyDTO.getName());
-        PropertyDTO createdProperty = propertyService.create(propertyDTO);
+        PropertyDTO createdProperty = propertyCommandService.create(propertyDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProperty);
     }
 
@@ -58,23 +84,17 @@ public class PropertyRestController {
     public ResponseEntity<PropertyDTO> getPropertyById(
             @Parameter(description = "ID of the property to retrieve") @PathVariable Long id) {
         log.debug("Fetching property with ID: {}", id);
-        return ResponseEntity.ok(propertyService.findById(id));
+        return ResponseEntity.ok(propertyCommandService.findById(id));
     }
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).READ, T(com.proveritus.cloudutility.security.Permissions.LeasingAgent).READ, T(com.proveritus.cloudutility.security.Permissions.MaintenanceStaff).READ)")
-    @Operation(summary = "Get all properties with optional filtering and pagination")
-    public ResponseEntity<Page<PropertyDTO>> getProperties(
-            @RequestParam(required = false) PropertyType propertyType,
+    @Operation(summary = "Search properties with optional filtering and pagination")
+    public ResponseEntity<Page<PropertyDTO>> searchProperties(
+            @Parameter(description = "Filter criteria for properties") PropertyFilterDTO filter,
             Pageable pageable) {
-
-        log.debug("Fetching properties with type: {}, pageable: {}", propertyType, pageable);
-
-        if (propertyType != null) {
-            return ResponseEntity.ok(propertyService.getAllPropertiesByType(propertyType, pageable));
-        } else {
-            return ResponseEntity.ok(propertyService.getAllProperties(pageable));
-        }
+        log.debug("Searching properties with filter: {}, pageable: {}", filter, pageable);
+        return ResponseEntity.ok(propertyQueryService.searchProperties(filter, pageable));
     }
 
     @GetMapping("/by-manager/{managerId}")
@@ -85,7 +105,7 @@ public class PropertyRestController {
             Pageable pageable) {
 
         log.debug("Fetching properties with managerId: {}, pageable: {}", managerId, pageable);
-        return ResponseEntity.ok(propertyService.getPropertiesByManager(managerId, pageable));
+        return ResponseEntity.ok(propertyQueryService.getPropertiesByManager(managerId, pageable));
     }
 
     @PutMapping("/{id}")
@@ -102,7 +122,7 @@ public class PropertyRestController {
             @Valid @RequestBody PropertyDTO propertyDTO) {
         log.info("Updating property with ID: {}", id);
         propertyDTO.setId(id);
-        return ResponseEntity.ok(propertyService.update(propertyDTO));
+        return ResponseEntity.ok(propertyCommandService.update(propertyDTO));
     }
 
     @DeleteMapping("/{id}")
@@ -116,19 +136,8 @@ public class PropertyRestController {
     public ResponseEntity<Void> deleteProperty(
             @Parameter(description = "ID of the property to delete") @PathVariable Long id) {
         log.info("Deleting property with ID: {}", id);
-        propertyService.deleteById(id);
+        propertyCommandService.deleteById(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/search")
-    @PreAuthorize("hasAnyAuthority(T(com.proveritus.cloudutility.security.Permissions.Property).READ, T(com.proveritus.cloudutility.security.Permissions.LeasingAgent).READ, T(com.proveritus.cloudutility.security.Permissions.MaintenanceStaff).READ)")
-    @Operation(summary = "Search properties by filter")
-    public ResponseEntity<Page<PropertyDTO>> searchPropertiesByFilter(
-            @RequestBody PropertyFilterDTO filter,
-            Pageable pageable) {
-
-        log.debug("Searching properties with filter: {}", filter);
-        return ResponseEntity.ok(propertyService.searchProperties(filter, pageable));
     }
 
     @GetMapping("/{id}/stats")
@@ -141,7 +150,7 @@ public class PropertyRestController {
     public ResponseEntity<PropertyStatsDTO> getPropertyStats(
             @Parameter(description = "ID of the property") @PathVariable Long id) {
         log.debug("Fetching stats for property ID: {}", id);
-        return ResponseEntity.ok(propertyService.getPropertyStats(id));
+        return ResponseEntity.ok(propertyStatisticsService.getPropertyStats(id));
     }
 
     @GetMapping("/count")
@@ -149,7 +158,7 @@ public class PropertyRestController {
     @Operation(summary = "Get total number of properties")
     public ResponseEntity<Long> getPropertiesCount() {
         log.debug("Fetching properties count");
-        return ResponseEntity.ok(propertyService.getTotalPropertiesCount());
+        return ResponseEntity.ok(propertyStatisticsService.getTotalPropertiesCount());
     }
 
     @GetMapping("/stats/system-wide")
@@ -160,7 +169,7 @@ public class PropertyRestController {
     })
     public ResponseEntity<SystemStatsDTO> getSystemWideStats() {
         log.debug("Fetching system-wide stats");
-        return ResponseEntity.ok(propertyService.getSystemWideStats());
+        return ResponseEntity.ok(propertyStatisticsService.getSystemWideStats());
     }
 
     @GetMapping("/count-by-type")
@@ -168,7 +177,7 @@ public class PropertyRestController {
     @Operation(summary = "Get total number of properties by type")
     public ResponseEntity<Long> getPropertiesCountByType(@RequestParam PropertyType propertyType) {
         log.debug("Fetching properties count by type: {}", propertyType);
-        return ResponseEntity.ok(propertyService.countPropertiesByType(propertyType));
+        return ResponseEntity.ok(propertyStatisticsService.countPropertiesByType(propertyType));
     }
 
     @GetMapping("/stats/system-wide-by-type")
@@ -179,7 +188,7 @@ public class PropertyRestController {
     })
     public ResponseEntity<SystemStatsDTO> getSystemWideStatsByType(@RequestParam PropertyType propertyType) {
         log.debug("Fetching system-wide stats by type: {}", propertyType);
-        return ResponseEntity.ok(propertyService.getSystemWideStatsByType(propertyType));
+        return ResponseEntity.ok(propertyStatisticsService.getSystemWideStatsByType(propertyType));
     }
 
     @GetMapping("/by-manager/{managerId}/stats")
@@ -188,6 +197,6 @@ public class PropertyRestController {
     public ResponseEntity<PropertyStatsDTO> getPropertyStatsByManager(
             @PathVariable Long managerId) {
         log.debug("Fetching stats for properties with managerId: {}", managerId);
-        return ResponseEntity.ok(propertyService.getPropertyStatsByManager(managerId));
+        return ResponseEntity.ok(propertyStatisticsService.getPropertyStatsByManager(managerId));
     }
 }

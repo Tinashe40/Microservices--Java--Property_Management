@@ -26,12 +26,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,16 +38,14 @@ import java.util.stream.Collectors;
 public class PropertyServiceImpl extends DomainServiceImpl<Property, PropertyDTO, PropertyDTO, PropertyDTO> implements PropertyService {
 
     private final PropertyRepository propertyRepository;
-    private final UnitRepository unitRepository;
     private final PropertyMapper propertyMapper;
     private final PropertyValidator propertyValidator;
     private final UserEnrichmentService userEnrichmentService;
     private final PropertySpecificationRepository propertySpecificationRepository;
 
-    public PropertyServiceImpl(PropertyRepository propertyRepository, UnitRepository unitRepository, PropertyMapper propertyMapper, PropertyValidator propertyValidator, UserEnrichmentService userEnrichmentService, PropertySpecificationRepository propertySpecificationRepository) {
+    public PropertyServiceImpl(PropertyRepository propertyRepository, PropertyMapper propertyMapper, PropertyValidator propertyValidator, UserEnrichmentService userEnrichmentService, PropertySpecificationRepository propertySpecificationRepository) {
         super(propertyRepository, propertyMapper);
         this.propertyRepository = propertyRepository;
-        this.unitRepository = unitRepository;
         this.propertyMapper = propertyMapper;
         this.propertyValidator = propertyValidator;
         this.userEnrichmentService = userEnrichmentService;
@@ -218,74 +214,10 @@ public class PropertyServiceImpl extends DomainServiceImpl<Property, PropertyDTO
         return userEnrichmentService.enrichPropertiesWithUserDetails(properties, propertyDTOs);
     }
 
-    // ========== Statistics Operations ==========
-
-    @Override
-    @Cacheable(value = "propertyStats", key = "#id")
-    @Transactional(readOnly = true)
-    public PropertyStatsDTO getPropertyStats(Long id) {
-        log.debug("Fetching statistics for property ID: {}", id);
-
-        PropertyStatsDTO stats = propertyRepository.getPropertyStats(id);
-
-        if (stats == null) {
-            return new PropertyStatsDTO(0, 0, 0, 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0);
-        }
-
-        return stats;
-    }
-
-    @Override
-    @PreAuthorize("hasAuthority('property:count:read')")
-    @Transactional(readOnly = true)
-    public long getTotalPropertiesCount() {
-        log.debug("Fetching total properties count");
-        return propertyRepository.countAllProperties();
-    }
-
-    @Override
-    @PreAuthorize("hasAuthority('property:count:read')")
-    @Transactional(readOnly = true)
-    public long countPropertiesByType(PropertyType propertyType) {
-        log.debug("Counting properties by type: {}", propertyType);
-        return propertyRepository.countByPropertyType(propertyType);
-    }
-
-    @Override
-    @PreAuthorize("hasAuthority('system:stats:read')")
-    @Cacheable(value = "systemStats", key = "'all'")
-    @Transactional(readOnly = true)
-    public SystemStatsDTO getSystemWideStats() {
-        log.debug("Fetching system-wide statistics");
-        return calculateSystemStats(null);
-    }
-
-    @Override
-    @PreAuthorize("hasAuthority('system:stats:read')")
-    @Cacheable(value = "systemStats", key = "#propertyType")
-    @Transactional(readOnly = true)
-    public SystemStatsDTO getSystemWideStatsByType(PropertyType propertyType) {
-        log.debug("Fetching system-wide statistics for property type: {}", propertyType);
-        return calculateSystemStats(propertyType);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public PropertyStatsDTO getPropertyStatsByManager(Long managerId) {
-        log.debug("Fetching statistics for properties managed by manager ID: {}", managerId);
-        PropertyStatsDTO stats = propertyRepository.getPropertyStatsByManager(managerId);
-        if (stats == null) {
-            return new PropertyStatsDTO(0, 0, 0, 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0);
-        }
-        return stats;
-    }
-
     // ========== Private Helper Methods ==========
 
     private PropertyDTO convertToDto(Property property) {
-        PropertyDTO propertyDTO = propertyMapper.toDto(property);
-        userEnrichmentService.enrichPropertyDTOWithUserDetails(property, propertyDTO);
-        return propertyDTO;
+        return propertyMapper.toDto(property);
     }
 
     private String sanitizeSearchQuery(String query) {
@@ -293,31 +225,6 @@ public class PropertyServiceImpl extends DomainServiceImpl<Property, PropertyDTO
             return "";
         }
         return query.replaceAll("[\"\\\\]", "").trim();
-    }
-
-    private SystemStatsDTO calculateSystemStats(PropertyType propertyType) {
-        long totalProperties = propertyType == null
-                ? propertyRepository.count()
-                : propertyRepository.countByPropertyType(propertyType);
-
-        long totalUnits = unitRepository.count();
-        long occupiedUnits = unitRepository.countByOccupancyStatus(OccupancyStatus.OCCUPIED);
-
-        double occupancyRate = totalUnits > 0
-                ? ((double) occupiedUnits / totalUnits) * 100
-                : 0.0;
-
-        double totalActualIncome = Optional.ofNullable(unitRepository.calculateTotalActualIncome()).orElse(0.0);
-        double totalPotentialIncome = Optional.ofNullable(unitRepository.calculateTotalPotentialIncome()).orElse(0.0);
-
-        return new SystemStatsDTO(
-                totalProperties,
-                totalUnits,
-                occupiedUnits,
-                occupancyRate,
-                totalActualIncome,
-                totalPotentialIncome
-        );
     }
 
     @Override

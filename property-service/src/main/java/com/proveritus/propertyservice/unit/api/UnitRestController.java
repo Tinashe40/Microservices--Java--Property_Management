@@ -4,6 +4,7 @@ import com.proveritus.cloudutility.audit.annotation.Auditable;
 import com.proveritus.cloudutility.enums.OccupancyStatus;
 import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import com.proveritus.propertyservice.unit.service.UnitService;
+import com.proveritus.propertyservice.util.PageableFactory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,9 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -80,7 +79,7 @@ public class UnitRestController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get units with filtering and pagination")
     @Auditable
-    public ResponseEntity<?> getUnits(
+    public ResponseEntity<Page<UnitDTO>> getUnits(
             @RequestParam(required = false) Long propertyId,
             @RequestParam(required = false) Long floorId,
             @RequestParam(required = false) OccupancyStatus occupancyStatus,
@@ -92,23 +91,9 @@ public class UnitRestController {
         log.debug("Fetching units with filters - Property ID: {}, Floor ID: {}, Occupancy: {}",
                 propertyId, floorId, occupancyStatus);
 
-        Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
-                ? Sort.Direction.DESC : Sort.Direction.ASC;
-        
-        Pageable pageable;
-        if (size <= 0) {
-            pageable = Pageable.unpaged();
-        } else {
-            pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        }
-
+        Pageable pageable = PageableFactory.createPageable(page, size, sortBy, direction);
         Page<UnitDTO> unitsPage = unitService.getUnitsWithFilters(propertyId, floorId, occupancyStatus, pageable);
-
-        if (pageable.isUnpaged()) {
-            return ResponseEntity.ok(unitsPage.getContent());
-        } else {
-            return ResponseEntity.ok(unitsPage);
-        }
+        return ResponseEntity.ok(unitsPage);
     }
 
     @PutMapping("/{id}")
@@ -201,27 +186,15 @@ public class UnitRestController {
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Search units by name or tenant")
-    public ResponseEntity<?> searchUnits(
+    public ResponseEntity<Page<UnitDTO>> searchUnits(
             @RequestParam String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         log.debug("Searching units with query: {}", query);
-
-        Pageable pageable;
-        if (size <= 0) {
-            pageable = Pageable.unpaged();
-        } else {
-            pageable = PageRequest.of(page, size);
-        }
-
+        Pageable pageable = PageableFactory.createPageable(page, size);
         Page<UnitDTO> unitsPage = unitService.searchUnits(query, pageable);
-
-        if (pageable.isUnpaged()) {
-            return ResponseEntity.ok(unitsPage.getContent());
-        } else {
-            return ResponseEntity.ok(unitsPage);
-        }
+        return ResponseEntity.ok(unitsPage);
     }
 
     @GetMapping("/property/{propertyId}/income")

@@ -1,22 +1,18 @@
 package com.proveritus.propertyservice.floor.api;
 
 import com.proveritus.cloudutility.audit.annotation.Auditable;
-import com.proveritus.cloudutility.security.Permissions;
-import com.proveritus.propertyservice.floor.dto.FloorDTO;
-import com.proveritus.propertyservice.floor.dto.FloorOccupancyStats;
-import com.proveritus.propertyservice.floor.service.FloorService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
+import com.proveritus.propertyservice.floor.dto.*;
+import com.proveritus.propertyservice.floor.service.*;
+import com.proveritus.propertyservice.util.PageableFactory;
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.responses.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,7 +57,7 @@ public class FloorRestController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get floors by property ID with optional pagination")
     @Auditable
-    public ResponseEntity<?> getFloorsByPropertyId(
+    public ResponseEntity<Page<FloorDTO>> getFloorsByPropertyId(
             @RequestParam Long propertyId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -69,16 +65,9 @@ public class FloorRestController {
             @RequestParam(defaultValue = "asc") String direction) {
 
         log.debug("Fetching floors for property ID: {}, page: {}, size: {}", propertyId, page, size);
-
-        if (size <= 0) {
-            return ResponseEntity.ok(floorService.getFloorsByPropertyId(propertyId));
-        } else {
-            Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
-                    ? Sort.Direction.DESC : Sort.Direction.ASC;
-            Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-            Page<FloorDTO> floors = floorService.getFloorsByPropertyId(propertyId, pageable);
-            return ResponseEntity.ok(floors);
-        }
+        Pageable pageable = PageableFactory.createPageable(page, size, sortBy, direction);
+        Page<FloorDTO> floorsPage = floorService.getFloorsByPropertyId(propertyId, pageable);
+        return ResponseEntity.ok(floorsPage);
     }
 
     @PutMapping("/{id}")

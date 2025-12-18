@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface FloorService extends DomainService<Floor, FloorDTO, FloorDTO, FloorDTO> {
-    List<FloorDTO> getFloorsByPropertyId(Long propertyId);
+//    List<FloorDTO> getFloorsByPropertyId(Long propertyId);
     Page<FloorDTO> getFloorsByPropertyId(Long propertyId, Pageable pageable);
     void createFloors(List<FloorDTO> floorDTOs);
     void updateFloors(List<FloorDTO> floorDTOs);
