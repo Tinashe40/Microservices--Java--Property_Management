@@ -62,7 +62,7 @@ public class PropertyServiceImpl extends DomainServiceImpl<Property, PropertyDTO
         propertyValidator.validate(propertyDTO);
 
         UserDTO currentUser = SecurityUtils.getCurrentUserDTO().orElseThrow(() -> new AccessDeniedException("User not authenticated"));
-        propertyDTO.setManagedBy(currentUser.getId());
+        propertyDTO.setManagedBy(String.valueOf(currentUser.getId()));
 
         Property property = propertyMapper.fromCreateDto(propertyDTO);
         Property savedProperty = propertyRepository.save(property);
@@ -82,7 +82,7 @@ public class PropertyServiceImpl extends DomainServiceImpl<Property, PropertyDTO
         List<Property> properties = propertyDTOs.stream()
                 .peek(dto -> {
                     propertyValidator.validate(dto);
-                    dto.setManagedBy(currentUser.getId());
+                    dto.setManagedBy(String.valueOf(currentUser.getId()));
                 })
                 .map(propertyMapper::fromCreateDto)
                 .collect(Collectors.toList());
@@ -122,7 +122,7 @@ public class PropertyServiceImpl extends DomainServiceImpl<Property, PropertyDTO
     @Override
     @Cacheable(value = "properties", key = "'manager-' + #managerId + '-' + #pageable.pageNumber")
     @Transactional(readOnly = true)
-    public Page<PropertyDTO> getPropertiesByManager(Long managerId, Pageable pageable) {
+    public Page<PropertyDTO> getPropertiesByManager(String managerId, Pageable pageable) {
         log.debug("Fetching properties for manager ID: {}", managerId);
 
         Page<Property> properties = propertyRepository.findByManagedBy(managerId, pageable);
@@ -174,10 +174,10 @@ public class PropertyServiceImpl extends DomainServiceImpl<Property, PropertyDTO
     @Override
     @CacheEvict(value = "properties", allEntries = true)
     @Auditable(action = "DELETE_PROPERTIES", entity = "Property")
-    public void deleteProperties(List<Long> ids) {
+    public void deleteProperties(List<String> ids) {
         log.info("Batch deleting {} properties", ids.size());
 
-        List<Long> existingIds = ids.stream()
+        List<String> existingIds = ids.stream()
                 .filter(propertyRepository::existsById)
                 .collect(Collectors.toList());
 

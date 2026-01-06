@@ -11,4 +11,3 @@ public @interface Auditable {
     String action() default "";
     String entity() default "";
 }
-

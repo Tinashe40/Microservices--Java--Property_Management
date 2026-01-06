@@ -9,11 +9,11 @@ import org.springframework.data.repository.query.Param;
 import java.util.*;
 
 @Repository
-public interface FloorRepository extends BaseDao<Floor, Long> {
-    List<Floor> findByPropertyId(Long propertyId);
-    Page<Floor> findByPropertyId(Long propertyId, Pageable pageable);
-    Optional<Floor> findByNameAndPropertyId(String name, Long propertyId);
+public interface FloorRepository extends BaseDao<Floor, String> {
+    List<Floor> findByPropertyId(String propertyId);
+    Page<Floor> findByPropertyId(String propertyId, Pageable pageable);
+    Optional<Floor> findByNameAndPropertyId(String name, String propertyId);
 
     @Query("SELECT COUNT(f) FROM Floor f WHERE f.property.id = :propertyId")
-    long countByPropertyId(@Param("propertyId") Long propertyId);
+    long countByPropertyId(@Param("propertyId") String propertyId);
 }

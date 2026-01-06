@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PropertyRepository extends BaseDao<Property, Long>, JpaSpecificationExecutor<Property> {
+public interface PropertyRepository extends BaseDao<Property, String>, JpaSpecificationExecutor<Property> {
     Optional<Property> findByName(String name);
 
     List<Property> findByNameContainingIgnoreCase(String name);
@@ -26,15 +26,15 @@ public interface PropertyRepository extends BaseDao<Property, Long>, JpaSpecific
 
     Page<Property> findByPropertyType(PropertyType propertyType, Pageable pageable);
 
-    Page<Property> findByPropertyTypeAndManagedBy(PropertyType propertyType, Long managedBy, Pageable pageable);
+    Page<Property> findByPropertyTypeAndManagedBy(PropertyType propertyType, String managedBy, Pageable pageable);
 
-    Page<Property> findByManagedBy(Long managedBy, Pageable pageable);
+    Page<Property> findByManagedBy(String managedBy, Pageable pageable);
 
     @Query("SELECT p FROM Property p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.address) LIKE LOWER(CONCAT('%', :query, '%'))")
     Page<Property> searchProperties(@Param("query") String query, Pageable pageable);
 
     @Query("SELECT p FROM Property p WHERE p.managedBy = :managerId AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.address) LIKE LOWER(CONCAT('%', :query, '%')))")
-    Page<Property> searchPropertiesByManager(@Param("query") String query, @Param("managerId") Long managerId, Pageable pageable);
+    Page<Property> searchPropertiesByManager(@Param("query") String query, @Param("managerId") String managerId, Pageable pageable);
 
     @Query("SELECT COUNT(p) FROM Property p")
     long countAllProperties();
@@ -62,7 +62,7 @@ public interface PropertyRepository extends BaseDao<Property, Long>, JpaSpecific
             WHERE p.id = :id
             GROUP BY p.id
             """)
-    PropertyStatsDTO getPropertyStats(@Param("id") Long id);
+    PropertyStatsDTO getPropertyStats(@Param("id") String id);
 
     @Query("""
             SELECT new com.proveritus.propertyservice.property.dto.PropertyStatsDTO(
@@ -84,5 +84,5 @@ public interface PropertyRepository extends BaseDao<Property, Long>, JpaSpecific
             WHERE p.managedBy = :managerId
             GROUP BY p.managedBy
             """)
-    PropertyStatsDTO getPropertyStatsByManager(@Param("managerId") Long managerId);
+    PropertyStatsDTO getPropertyStatsByManager(@Param("managerId") String managerId);
 }

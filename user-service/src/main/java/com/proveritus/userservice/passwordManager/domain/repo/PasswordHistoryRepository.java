@@ -9,11 +9,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PasswordHistoryRepository extends BaseDao<PasswordHistory, Long> {
+public interface PasswordHistoryRepository extends BaseDao<PasswordHistory, String> {
 
-    List<PasswordHistory> findByUserId(Long userId);
+    List<PasswordHistory> findByUserId(String userId);
 
-    Page<PasswordHistory> findByUserId(Long userId, Pageable pageable);
+    Page<PasswordHistory> findByUserId(String userId, Pageable pageable);
 
-    List<PasswordHistory> findByUserIdOrderByCreatedDateAsc(Long userId);
+    List<PasswordHistory> findByUserIdOrderByCreatedDateAsc(String userId);
 }

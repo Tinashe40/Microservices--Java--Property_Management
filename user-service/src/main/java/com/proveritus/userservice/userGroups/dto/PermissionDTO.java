@@ -12,13 +12,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PermissionDTO implements Updatable {
-    private Long id;
+    private String id;
 
     @NotBlank(message = "Permission name cannot be blank")
     private String name;
 
     @Override
-    public Long getId() {
+    public String getId() {
         return id;
     }
 }

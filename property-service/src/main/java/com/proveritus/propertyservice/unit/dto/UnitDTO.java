@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @Data
 public class UnitDTO implements Updatable {
 
-    private Long id;
+    private String id;
 
     @NotBlank(message = "Unit name is required")
     private String name;
@@ -46,7 +46,7 @@ public class UnitDTO implements Updatable {
     private LocalDate leaseEndDate;
 
     @NotNull(message = "Property ID is required")
-    private Long propertyId;
+    private String propertyId;
 
-    private Long floorId;
+    private String floorId;
 }

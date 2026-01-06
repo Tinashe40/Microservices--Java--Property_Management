@@ -30,4 +30,3 @@ public class UserGroup extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "permission_id", referencedColumnName = "id"))
     private Set<com.proveritus.userservice.userGroups.domain.Permission> permissions = new HashSet<>();
 }
-

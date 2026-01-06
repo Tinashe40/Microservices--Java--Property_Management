@@ -1,92 +1,302 @@
-server:
-  port: 8081
-
 spring:
-  main:
-    allow-bean-definition-overriding: true
   application:
     name: user-service
+  
+  profiles:
+    active: ${ENVIRONMENT:dev}
+  
+  # Database Configuration
   datasource:
-    url: jdbc:mysql://localhost:3306/staging_data_users?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:sudo0047}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/userdb?useSSL=false&serverTimezone=UTC}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      idle-timeout: 30000
-      max-lifetime: 2000000
-      connection-timeout: 30000
+      maximum-pool-size: 20
+      minimum-idle: 10
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      connection-timeout: 20000
+      leak-detection-threshold: 60000
+      pool-name: UserServiceHikariCP
+  
+  # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate # Use Flyway for schema management
+    show-sql: false
     properties:
       hibernate:
-
         format_sql: true
         jdbc:
           batch_size: 20
           batch_versioned_data: true
-    open-in-view: false
+        order_inserts: true
+        order_updates: true
+        query:
+          in_clause_parameter_padding: true
+        default_schema: userdb
+    open-in-view: false # Prevent lazy loading issues
+  
+  # Flyway Migration
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+  
+  # Cache Configuration
   cache:
-    type: caffeine
+    type: redis
+    redis:
+      time-to-live: 600000 # 10 minutes
+      cache-null-values: false
     caffeine:
-      spec: maximumSize=500,expireAfterWrite=300s
-  jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
-    time-zone: UTC
+      spec: maximumSize=10000,expireAfterWrite=600s
+  
+  # Redis Configuration
   data:
-    web:
-      pageable:
-        default-page-size: 20
-        max-page-size: 100
-  mail:
-    host: ${MAIL_HOST:smtp.mailtrap.io}
-    port: ${MAIL_PORT:2525}
-    username: ${MAIL_USERNAME:9d2dee80537395}
-    password: ${MAIL_PASSWORD:9ebac56779b316}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 2000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: -1ms
+  
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    time-zone: UTC
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+  
+  # Web Configuration
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+  
+  # Security
+  security:
+    cors:
+      allowed-origins: ${CORS_ORIGINS:http://localhost:3000,https://app.example.com}
+      allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+      allowed-headers: "*"
+      exposed-headers: X-Correlation-ID,X-Rate-Limit-Remaining
+      allow-credentials: true
+      max-age: 3600
+    public-endpoints: >
+      /api/auth/**,
+      /api/public/**,
+      /swagger-ui/**,
+      /v3/api-docs/**,
+      /actuator/health,
+      /actuator/info
 
+# JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:db3081ad709552e4653b77350467fd7bac5d5d3c926338003acdf7a2b7e409aba9d2eb910a0bc9f5b86e818a1ce9719d690de4209c0ee5e50d28eee8d2154048}
-  expiration-in-ms: ${JWT_EXPIRATION:5400000}
-  issuer: property-management-system
-  audience: proveritus-app
+  secret: ${JWT_SECRET} # Must be externalized!
+  expiration-ms: 3600000 # 1 hour
+  refresh-expiration-ms: 604800000 # 7 days
+  issuer: user-service
+  audience: proveritus-platform
 
+# Caching Configuration
+cache:
+  caffeine:
+    enabled: true
+  redis:
+    enabled: true
 
+# Rate Limiting Configuration
+rate-limit:
+  global:
+    limit: 1000
+    duration: 60 # seconds
+  per-user:
+    limit: 100
+    duration: 60
+  authentication:
+    limit: 5
+    duration: 60
+  password-reset:
+    limit: 3
+    duration: 3600
+
+# Monitoring & Observability
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,caches
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+  metrics:
+    enable:
+      jvm: true
+      system: true
+      tomcat: true
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 1.0 # 100% in dev, lower in prod
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.proveritus: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr([%X{correlationId}]){cyan} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{correlationId}] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/user-service.log
+    max-size: 10MB
+    max-history: 30
+    total-size-cap: 1GB
+
+# Eureka Client (Service Discovery)
 eureka:
   client:
-    serviceUrl:
+    service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
-#
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: health, info, metrics, prometheus
-#  endpoint:
-#    health:
-#      show-details: always
-#  metrics:
-#    export:
-#      prometheus:
-#        enabled: true
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    metadata-map:
+      version: ${project.version:1.0.0}
+      profile: ${spring.profiles.active}
+
+# OpenAPI Documentation
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: false
+
+# Application-Specific Configuration
+app:
+  password-policy:
+    min-length: 12
+    max-length: 128
+    requires-uppercase: true
+    requires-lowercase: true
+    requires-number: true
+    requires-special-char: true
+    password-history-size: 12
+    password-expiration-days: 90
+  
+  account-lockout:
+    max-failed-attempts: 5
+    lockout-duration-minutes: 15
+  
+  async:
+    core-pool-size: 5
+    max-pool-size: 10
+    queue-capacity: 100
+    thread-name-prefix: async-
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
+  cache:
+    type: caffeine
+  
+logging:
+  level:
+    com.proveritus: DEBUG
+
+rate-limit:
+  global:
+    limit: 10000 # Higher limits in dev
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  jpa:
+    show-sql: false
+  
+  cache:
+    type: redis
 
 logging:
   level:
-    com.proveritus.userservice: DEBUG
-    org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-  file:
-    name: logs/user-service.log
-  pattern:
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    root: WARN
+    com.proveritus: INFO
 
+management:
+  endpoint:
+    health:
+      show-details: never
+  tracing:
+    sampling:
+      probability: 0.1 # 10% sampling in production
 
+---
+# Test Profile
+spring:
+  config:
+    activate:
+      on-profile: test
+  
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  
+  cache:
+    type: none
+
+logging:
+  level:
+    root: WARN

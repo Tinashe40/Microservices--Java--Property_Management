@@ -22,7 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends BaseEntity {
-
+    @Id
     @Column(unique = true, nullable = false)
     private String username;
 

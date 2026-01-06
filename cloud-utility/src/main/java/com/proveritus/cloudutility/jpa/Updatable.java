@@ -6,5 +6,5 @@ package com.proveritus.cloudutility.jpa;
  */
 
 public interface Updatable {
-    Long getId();
+    String getId();
 }

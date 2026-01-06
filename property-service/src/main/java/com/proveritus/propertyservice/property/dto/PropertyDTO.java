@@ -16,13 +16,13 @@ import java.util.List;
 @Builder
 public class PropertyDTO implements Updatable {
 
-    private Long id;
+    private String id;
     private String name;
     private PropertyType propertyType;
     private String address;
     private Integer numberOfFloors;
     private Integer numberOfUnits;
-    private Long managedBy;
+    private String managedBy;
     private UserDTO managedByDetails;
     private List<FloorDTO> floors;
     private List<UnitDTO> units;

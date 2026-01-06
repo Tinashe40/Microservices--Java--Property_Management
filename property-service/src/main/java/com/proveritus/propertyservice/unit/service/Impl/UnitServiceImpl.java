@@ -76,7 +76,7 @@ public class UnitServiceImpl extends DomainServiceImpl<Unit, UnitDTO, UnitDTO, U
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
-    public UnitDTO getUnitByNameAndPropertyId(String name, Long propertyId) {
+    public UnitDTO getUnitByNameAndPropertyId(String name, String propertyId) {
         log.debug("Fetching unit with name: {} in property ID: {}", name, propertyId);
         return unitRepository.findByNameAndPropertyId(name, propertyId)
                 .map(unitMapper::toDto)
@@ -86,7 +86,7 @@ public class UnitServiceImpl extends DomainServiceImpl<Unit, UnitDTO, UnitDTO, U
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
-    public Page<UnitDTO> getUnitsByPropertyId(Long propertyId, Pageable pageable) {
+    public Page<UnitDTO> getUnitsByPropertyId(String propertyId, Pageable pageable) {
         log.debug("Fetching paginated units for property ID: {}", propertyId);
         return unitRepository.findByPropertyId(propertyId, pageable)
                 .map(unitMapper::toDto);
@@ -95,7 +95,7 @@ public class UnitServiceImpl extends DomainServiceImpl<Unit, UnitDTO, UnitDTO, U
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
-    public Page<UnitDTO> getUnitsByFloorId(Long floorId, Pageable pageable) {
+    public Page<UnitDTO> getUnitsByFloorId(String floorId, Pageable pageable) {
         log.debug("Fetching paginated units for floor ID: {}", floorId);
         return unitRepository.findByFloorId(floorId, pageable)
                 .map(unitMapper::toDto);
@@ -104,7 +104,7 @@ public class UnitServiceImpl extends DomainServiceImpl<Unit, UnitDTO, UnitDTO, U
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
-    public Page<UnitDTO> getUnitsWithFilters(Long propertyId, Long floorId, OccupancyStatus occupancyStatus, Pageable pageable) {
+    public Page<UnitDTO> getUnitsWithFilters(String propertyId, String floorId, OccupancyStatus occupancyStatus, Pageable pageable) {
         log.debug("Fetching units with filters - Property ID: {}, Floor ID: {}, Occupancy Status: {}",
                 propertyId, floorId, occupancyStatus);
 
@@ -141,10 +141,10 @@ public class UnitServiceImpl extends DomainServiceImpl<Unit, UnitDTO, UnitDTO, U
     @CacheEvict(value = "units", allEntries = true)
     @Auditable(action = "DELETE_UNIT", entity = "Unit")
     @PreAuthorize("hasAuthority('" + Permissions.Unit.DELETE + "')")
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         log.info("Deleting unit with ID: {}", id);
         Unit unit = findEntityById(id);
-        Long floorId = (unit.getFloor() != null) ? unit.getFloor().getId() : null;
+        String floorId = (unit.getFloor() != null) ? unit.getFloor().getId() : null;
 
         super.deleteById(id);
         updateFloorOccupancyIfNeeded(floorId);
@@ -201,7 +201,7 @@ public class UnitServiceImpl extends DomainServiceImpl<Unit, UnitDTO, UnitDTO, U
     @CacheEvict(value = "units", allEntries = true)
     @Auditable(action = "DELETE_UNITS", entity = "Unit")
     @PreAuthorize("hasAuthority('" + Permissions.Unit.DELETE + "')")
-    public void deleteUnits(List<Long> ids) {
+    public void deleteUnits(List<String> ids) {
         log.info("Deleting {} units", ids.size());
         unitRepository.deleteAllById(ids);
         log.debug("Successfully deleted {} units", ids.size());
@@ -211,7 +211,7 @@ public class UnitServiceImpl extends DomainServiceImpl<Unit, UnitDTO, UnitDTO, U
     @CacheEvict(value = "units", allEntries = true)
     @Auditable(action = "UPDATE_OCCUPANCY_STATUS", entity = "Unit")
     @PreAuthorize("hasAuthority('" + Permissions.Unit.UPDATE + "')")
-    public UnitDTO updateOccupancyStatus(Long id, OccupancyStatus occupancyStatus, String tenant) {
+    public UnitDTO updateOccupancyStatus(String id, OccupancyStatus occupancyStatus, String tenant) {
         log.info("Updating occupancy status for unit ID: {} to {}", id, occupancyStatus);
         Unit unit = findEntityById(id);
 
@@ -237,7 +237,7 @@ public class UnitServiceImpl extends DomainServiceImpl<Unit, UnitDTO, UnitDTO, U
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
-    public Double calculatePotentialRentalIncome(Long propertyId) {
+    public Double calculatePotentialRentalIncome(String propertyId) {
         log.debug("Calculating potential rental income for property ID: {}", propertyId);
         getPropertyById(propertyId);
         return unitRepository.calculateTotalRentalIncome(propertyId);
@@ -246,7 +246,7 @@ public class UnitServiceImpl extends DomainServiceImpl<Unit, UnitDTO, UnitDTO, U
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
-    public long countUnitsByPropertyId(Long propertyId) {
+    public long countUnitsByPropertyId(String propertyId) {
         log.debug("Counting units for property ID: {}", propertyId);
         getPropertyById(propertyId);
         return unitRepository.countByPropertyId(propertyId);
@@ -260,18 +260,18 @@ public class UnitServiceImpl extends DomainServiceImpl<Unit, UnitDTO, UnitDTO, U
         }
     }
 
-    private Property getPropertyById(Long propertyId) {
+    private Property getPropertyById(String propertyId) {
         return propertyRepository.findById(propertyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + propertyId));
     }
 
-    private Floor getFloorIfProvided(Long floorId) {
+    private Floor getFloorIfProvided(String floorId) {
         if (floorId == null) return null;
         return floorRepository.findById(floorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Floor not found with id: " + floorId));
     }
 
-    private void updateFloorOccupancyIfNeeded(Long floorId) {
+    private void updateFloorOccupancyIfNeeded(String floorId) {
         if (floorId != null) {
             floorService.updateFloorOccupancyStats(floorId);
         }

@@ -31,7 +31,7 @@ public interface DomainService<T, C, U extends Updatable, D> {
      * @param id The ID of the domain.
      * @return The DTO of the found domain.
      */
-    D findById(Long id);
+    D findById(String id);
 
     /**
      * Finds all entities.
@@ -53,6 +53,6 @@ public interface DomainService<T, C, U extends Updatable, D> {
      *
      * @param id The ID of the domain to delete.
      */
-    void deleteById(Long id);
+    void deleteById(String id);
 
 }

@@ -10,7 +10,7 @@ import java.util.Set;
 @Getter
 @Setter
 public class UserGroupDTO implements Updatable {
-    private Long id;
+    private String id;
 
     @NotBlank(message = "UserGroup name cannot be blank")
     private String name;
@@ -18,7 +18,7 @@ public class UserGroupDTO implements Updatable {
     private Set<String> permissions;
 
     @Override
-    public Long getId() {
+    public String getId() {
         return id;
     }
 }

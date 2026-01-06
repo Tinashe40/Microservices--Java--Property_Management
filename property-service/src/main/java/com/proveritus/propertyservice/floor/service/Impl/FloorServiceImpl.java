@@ -72,7 +72,7 @@ public class FloorServiceImpl extends DomainServiceImpl<Floor, FloorDTO, FloorDT
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
-    public Page<FloorDTO> getFloorsByPropertyId(Long propertyId, Pageable pageable) {
+    public Page<FloorDTO> getFloorsByPropertyId(String propertyId, Pageable pageable) {
         log.debug("Fetching paginated floors for property ID: {}", propertyId);
         validatePropertyExists(propertyId);
         return floorRepository.findByPropertyId(propertyId, pageable)
@@ -108,7 +108,7 @@ public class FloorServiceImpl extends DomainServiceImpl<Floor, FloorDTO, FloorDT
     @CacheEvict(value = "floors", allEntries = true)
     @Auditable(action = "DELETE_FLOOR", entity = "Floor")
     @PreAuthorize("hasAuthority('" + Permissions.Floor.DELETE + "')")
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         log.info("Deleting floor with ID: {}", id);
         Floor floor = findEntityById(id);
 
@@ -171,7 +171,7 @@ public class FloorServiceImpl extends DomainServiceImpl<Floor, FloorDTO, FloorDT
     @CacheEvict(value = "floors", allEntries = true)
     @Auditable(action = "DELETE_FLOORS", entity = "Floor")
     @PreAuthorize("hasAuthority('" + Permissions.Floor.DELETE + "')")
-    public void deleteFloors(List<Long> ids) {
+    public void deleteFloors(List<String> ids) {
         log.info("Deleting {} floors", ids.size());
         ids.forEach(id -> {
             Floor floor = findEntityById(id);
@@ -188,7 +188,7 @@ public class FloorServiceImpl extends DomainServiceImpl<Floor, FloorDTO, FloorDT
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
-    public FloorOccupancyStats getFloorOccupancyStats(Long id) {
+    public FloorOccupancyStats getFloorOccupancyStats(String id) {
         log.debug("Fetching occupancy stats for floor ID: {}", id);
         return floorRepository.findById(id)
                 .map(this::calculateOccupancyStats)
@@ -197,7 +197,7 @@ public class FloorServiceImpl extends DomainServiceImpl<Floor, FloorDTO, FloorDT
 
         @Override
         @PreAuthorize("hasAuthority('" + Permissions.Floor.UPDATE + "')")
-        public void updateFloorOccupancyStats(Long floorId) {
+        public void updateFloorOccupancyStats(String floorId) {
 
             log.debug("Updating occupancy stats for floor ID: {}", floorId);
             Floor floor = findEntityById(floorId);
@@ -214,7 +214,7 @@ public class FloorServiceImpl extends DomainServiceImpl<Floor, FloorDTO, FloorDT
 
     
 
-        private Property validatePropertyExists(Long propertyId) {
+        private Property validatePropertyExists(String propertyId) {
 
             if (propertyId == null) {
 

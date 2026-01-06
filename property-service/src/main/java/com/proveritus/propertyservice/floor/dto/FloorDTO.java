@@ -14,10 +14,10 @@ import java.util.List;
 @AllArgsConstructor
 public class FloorDTO implements Updatable {
 
-    private Long id;
+    private String id;
 
     @NotNull(message = "Property ID is required")
-    private Long propertyId;
+    private String propertyId;
 
     @NotBlank(message = "Floor name is required")
     private String name;

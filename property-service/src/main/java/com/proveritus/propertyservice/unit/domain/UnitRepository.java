@@ -12,21 +12,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UnitRepository extends BaseDao<Unit, Long> {
-    List<Unit> findByPropertyId(Long propertyId);
+public interface UnitRepository extends BaseDao<Unit, String> {
+    List<Unit> findByPropertyId(String propertyId);
 
-    List<Unit> findByFloorId(Long floorId);
+    List<Unit> findByFloorId(String floorId);
 
-    Optional<Unit> findByNameAndPropertyId(String name, Long propertyId);
+    Optional<Unit> findByNameAndPropertyId(String name, String propertyId);
 
-    Page<Unit> findByPropertyId(Long propertyId, Pageable pageable);
+    Page<Unit> findByPropertyId(String propertyId, Pageable pageable);
 
-    Page<Unit> findByFloorId(Long floorId, Pageable pageable);
+    Page<Unit> findByFloorId(String floorId, Pageable pageable);
 
-    long countByFloorId(Long floorId);
+    long countByFloorId(String floorId);
 
     @Query("SELECT COUNT(u) FROM Unit u WHERE u.floor.id = :floorId AND u.occupancyStatus = :occupancyStatus")
-    long countByFloorIdAndOccupancy(@Param("floorId") Long floorId, @Param("occupancy") OccupancyStatus occupancyStatus);
+    long countByFloorIdAndOccupancy(@Param("floorId") String floorId, @Param("occupancy") OccupancyStatus occupancyStatus);
 
     List<Unit> findByOccupancyStatus(OccupancyStatus occupancyStatus);
 
@@ -36,8 +36,8 @@ public interface UnitRepository extends BaseDao<Unit, Long> {
             "(:propertyId IS NULL OR u.property.id = :propertyId) AND " +
             "(:floorId IS NULL OR u.floor.id = :floorId) AND " +
             "(:occupancyStatus IS NULL OR u.occupancyStatus = :occupancyStatus)")
-    Page<Unit> findWithFilters(@Param("propertyId") Long propertyId,
-                               @Param("floorId") Long floorId,
+    Page<Unit> findWithFilters(@Param("propertyId") String propertyId,
+                               @Param("floorId") String floorId,
                                @Param("occupancyStatus") OccupancyStatus occupancyStatus,
                                Pageable pageable);
 
@@ -45,10 +45,10 @@ public interface UnitRepository extends BaseDao<Unit, Long> {
     Page<Unit> searchUnits(@Param("query") String query, Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(u.monthlyRent), 0) FROM Unit u WHERE u.property.id = :propertyId AND u.occupancyStatus = 'OCCUPIED'")
-    Double calculateTotalRentalIncome(@Param("propertyId") Long propertyId);
+    Double calculateTotalRentalIncome(@Param("propertyId") String propertyId);
 
     @Query("SELECT COUNT(u) FROM Unit u WHERE u.property.id = :propertyId")
-    long countByPropertyId(@Param("propertyId") Long propertyId);
+    long countByPropertyId(@Param("propertyId") String propertyId);
 
     long countByOccupancyStatus(OccupancyStatus occupancyStatus);
 

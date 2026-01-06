@@ -10,6 +10,11 @@ spring:
         locator:
           enabled: false
           lower-case-service-id: true
+      default-filters:
+        - name: RateLimiter
+          args:
+            key-resolver: "#{@userKeyResolver}"
+            rate-limiter: "#{@defaultRateLimiter}"
       routes:
         - id: user-service
           uri: lb://user-service
@@ -44,6 +49,14 @@ resilience4j.circuitbreaker:
       waitDurationInOpenState: 5s
       failureRateThreshold: 50
       eventConsumerBufferSize: 10
+
+# Resilience4j rate limiter configuration
+resilience4j.ratelimiter:
+  instances:
+    defaultRateLimiter:
+      limitForPeriod: 20
+      limitRefreshPeriod: 1s
+      timeoutDuration: 0
 
 # Security Configuration
 security:

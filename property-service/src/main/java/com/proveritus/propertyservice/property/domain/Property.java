@@ -26,5 +26,5 @@ public class Property extends BaseEntity {
     private Integer numberOfFloors;
     private Integer numberOfUnits;
 
-    private Long managedBy;
+    private String managedBy;
 }

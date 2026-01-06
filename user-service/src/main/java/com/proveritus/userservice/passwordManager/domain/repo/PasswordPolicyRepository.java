@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface PasswordPolicyRepository extends BaseDao<PasswordPolicy, Long> {
+public interface PasswordPolicyRepository extends BaseDao<PasswordPolicy, String> {
     Optional<PasswordPolicy> findFirstByOrderByIdAsc();
 }

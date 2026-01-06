@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 public abstract class DomainServiceImpl<T extends BaseEntity, C, U extends Updatable, D>
         implements DomainService<T, C, U, D> {
 
-    private final BaseDao<T, Long> baseDao;
+    private final BaseDao<T, String> baseDao;
     private final EntityDtoMapper<D, T, C, U> entityMapper;
 
-    protected DomainServiceImpl(BaseDao<T, Long> baseDao, EntityDtoMapper<D, T, C, U> entityMapper) {
+    protected DomainServiceImpl(BaseDao<T, String> baseDao, EntityDtoMapper<D, T, C, U> entityMapper) {
         this.baseDao = baseDao;
         this.entityMapper = entityMapper;
     }
@@ -29,7 +29,7 @@ public abstract class DomainServiceImpl<T extends BaseEntity, C, U extends Updat
 
     @Override
     public D update(U updateCommand) {
-        Long entityId = updateCommand.getId();
+        String entityId = updateCommand.getId();
         T entity = findEntityById(entityId);
         entityMapper.updateFromUpdateDto(updateCommand, entity);
         T updatedEntity = baseDao.save(entity);
@@ -37,16 +37,16 @@ public abstract class DomainServiceImpl<T extends BaseEntity, C, U extends Updat
     }
 
     @Override
-    public D findById(Long id) {
+    public D findById(String id) {
         return entityMapper.toDto(findEntityById(id));
     }
 
-    public T findEntityById(Long id) {
+    public T findEntityById(String id) {
         return baseDao.findOne(Specification.where(notDeleted()).and((root, query, cb) -> cb.equal(root.get("id"), id)))
                 .orElseThrow(() -> new ResourceNotFoundException(getEntityClass().getSimpleName().concat(" record not found with id: " + id)));
     }
 
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         T entity = findEntityById(id);
         entity.pseudoDelete();
         baseDao.save(entity);
