@@ -18,3 +18,35 @@ import java.util.Optional;
 public interface Repository<T extends BaseEntity<ID>, ID extends Serializable> 
         extends QueryRepository<T, ID>, CommandRepository<T, ID> {
 }
+
+/**
+ * Query operations for read-only access.
+ */
+interface QueryRepository<T extends BaseEntity<ID>, ID extends Serializable> {
+    
+    Optional<T> findById(ID id);
+    
+    List<T> findAll();
+    
+    Page<T> findAll(Pageable pageable);
+    
+    boolean existsById(ID id);
+    
+    long count();
+}
+
+/**
+ * Command operations for write access.
+ */
+interface CommandRepository<T extends BaseEntity<ID>, ID extends Serializable> {
+    
+    T save(T entity);
+    
+    List<T> saveAll(Iterable<T> entities);
+    
+    void deleteById(ID id);
+    
+    void delete(T entity);
+    
+    void deleteAll(Iterable<T> entities);
+}

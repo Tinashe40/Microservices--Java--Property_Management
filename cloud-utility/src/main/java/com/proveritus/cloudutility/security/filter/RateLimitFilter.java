@@ -1,75 +1,44 @@
 package com.proveritus.cloudutility.security.filter;
 
-import com.proveritus.cloudutility.security.ratelimit.RateLimitService;
-import com.proveritus.cloudutility.security.ratelimit.RateLimitConfiguration;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.ConsumptionProbe;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Filter for rate limiting HTTP requests.
- */
-@Component 
-@RequiredArgsConstructor
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private final RateLimitService rateLimitService;
+    private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String ip = request.getRemoteAddr();
+        Bucket bucket = buckets.computeIfAbsent(ip, k -> createNewBucket());
 
-        String key = resolveRateLimitKey(request);
-        
-        boolean allowed = rateLimitService.allowRequest(
-                key,
-                RateLimitConfiguration.globalLimitBucketConfiguration()
-        );
-
-        if (!allowed) {
-            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-            response.getWriter().write("Rate limit exceeded. Please try again later.");
-            return;
+        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
+        if (probe.isConsumed()) {
+            response.addHeader("X-Rate-Limit-Remaining", String.valueOf(probe.getRemainingTokens()));
+            filterChain.doFilter(request, response);
+        } else {
+            long waitForRefill = probe.getNanosToWaitForRefill() / 1_000_000_000;
+            response.addHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitForRefill));
+            response.sendError(HttpStatus.TOO_MANY_REQUESTS.value(),
+                    "You have exhausted your API Request Quota, please try again later.");
         }
-
-        // Add rate limit headers
-        long remaining = rateLimitService.getRemainingTokens(
-                key,
-                RateLimitConfiguration.globalLimitBucketConfiguration()
-        );
-        response.addHeader("X-Rate-Limit-Remaining", String.valueOf(remaining));
-
-        filterChain.doFilter(request, response);
     }
 
-    private String resolveRateLimitKey(HttpServletRequest request) {
-        // Try to get user ID from authentication, fallback to IP
-        String userId = request.getUserPrincipal() != null 
-                ? request.getUserPrincipal().getName() 
-                : null;
-        
-        if (userId != null) {
-            return "user:" + userId;
-        }
-        
-        return "ip:" + getClientIP(request);
-    }
+    private Bucket createNewBucket() {
 
-    private String getClientIP(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
+        return Bucket.builder()
+                .addLimit(io.github.bucket4j
+                        .Bandwidth.simple(10, java.time.Duration.ofMinutes(10)))
+                .build();
     }
 }

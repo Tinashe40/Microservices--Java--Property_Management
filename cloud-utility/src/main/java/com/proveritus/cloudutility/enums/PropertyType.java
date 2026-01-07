@@ -1,8 +1,14 @@
 package com.proveritus.cloudutility.enums;
 
 public enum PropertyType {
+    APARTMENT,
+    HOUSE,
     RESIDENTIAL,
     COMMERCIAL,
     INDUSTRIAL,
-    LAND
+    MIXED_USE,
+    LAND,
+    OFFICE,
+    RETAIL,
+    WAREHOUSE
 }

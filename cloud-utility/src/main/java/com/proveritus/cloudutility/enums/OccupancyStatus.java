@@ -1,10 +1,10 @@
 package com.proveritus.cloudutility.enums;
 
 public enum OccupancyStatus {
+    VACANT,
     OCCUPIED,
-    RESERVED,
-    AVAILABLE,
-    BLOCKED,
+    UNAVAILABLE,
     UNDER_MAINTENANCE,
-    NOT_AVAILABLE
+    AVAILABLE,
+
 }

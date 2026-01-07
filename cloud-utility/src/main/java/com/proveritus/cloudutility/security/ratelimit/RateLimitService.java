@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  * Service for rate limiting operations.
  */
 @Slf4j
-@Service 
+@Service
 @RequiredArgsConstructor
 public class RateLimitService {
 

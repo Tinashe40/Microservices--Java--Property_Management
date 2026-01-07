@@ -1,111 +1,98 @@
 package com.proveritus.cloudutility.security.jwt;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
-import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.function.Function;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Component
-@AllArgsConstructor
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
+    private final JwtProperties jwtProperties;
+    private final JwtTokenBlacklist tokenBlacklist;
+    private SecretKey cachedKey;
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
-    @Value("${jwt.expiration-in-ms}")
-    private long jwtExpirationInMs;
-
-    @Value("${jwt.issuer}")
-    private String jwtIssuer;
-
-    @Value("${jwt.audience}")
-    private String jwtAudience;
-
-    private SecretKey key;
-
-    @PostConstruct
-    public void init() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+    private SecretKey getSigningKey() {
+        if (cachedKey == null) {
+            cachedKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
+        }
+        return cachedKey;
     }
 
     public String generateToken(Authentication authentication) {
-        UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
-        return generateTokenForUsername(userPrincipal.getUsername());
+        return generateToken(authentication.getName(), extractAuthorities(authentication));
     }
 
-    public String generateTokenForUsername(String username) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+    public String generateToken(String username, List<String> authorities) {
+        Instant now = Instant.now();
+        Instant expiry = now.plus(jwtProperties.getExpiration(), ChronoUnit.MILLIS);
 
         return Jwts.builder()
                 .subject(username)
-                .issuer(jwtIssuer)
-                .audience().add(jwtAudience).and()
-                .issuedAt(new Date())
-                .expiration(expiryDate)
-                .signWith(key)
+                .claim("auth", String.join(",", authorities))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiry))
+                .signWith(getSigningKey())
                 .compact();
     }
 
-    public String getUsernameFromJWT(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+    public Claims extractClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
-    public Date getExpirationDateFromToken(String token) {
-        return getClaimFromToken(token, Claims::getExpiration);
-    }
+    public boolean validateToken(String token) {
+        if (tokenBlacklist.isBlacklisted(token)) {
+            log.debug("Token is blacklisted");
+            return false;
+        }
 
-    public boolean isTokenValid(String token) {
         try {
             Jwts.parser()
-                    .verifyWith(key)
-                    .requireIssuer(jwtIssuer)
-                    .requireAudience(jwtAudience)
+                    .verifyWith(getSigningKey())
                     .build()
                     .parseSignedClaims(token);
             return true;
-        } catch (SignatureException ex) {
-            logger.error("Invalid JWT signature");
-        } catch (MalformedJwtException ex) {
-            logger.error("Invalid JWT token");
-        } catch (ExpiredJwtException ex) {
-            logger.error("Expired JWT token");
-        } catch (UnsupportedJwtException ex) {
-            logger.error("Unsupported JWT token");
-        } catch (IllegalArgumentException ex) {
-            logger.error("JWT claims string is empty.");
+        } catch (Exception e) {
+            log.debug("Token validation failed: {}", e.getMessage());
+            return false;
         }
-        return false;
     }
 
-    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = getAllClaimsFromToken(token);
-        return claimsResolver.apply(claims);
+    public void invalidateToken(String token) {
+        tokenBlacklist.blacklist(token);
     }
 
-    private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+    public String extractUsername(String token) {
+        return extractClaims(token).getSubject();
     }
 
+    public List<String> extractAuthorities(String token) {
+        String authorities = extractClaims(token).get("auth", String.class);
+        return StringUtils.hasText(authorities)
+                ? List.of(authorities.split(","))
+                : List.of();
+    }
+
+    private List<String> extractAuthorities(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+    }
 }

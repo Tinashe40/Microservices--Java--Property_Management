@@ -1,9 +1,8 @@
 package com.proveritus.propertyservice.domain.model.floor;
 
-import com.proveritus.cloudutility.core.domain.BaseEntity;
+import com.proveritus.cloudutility.jpa.entity;
 import com.proveritus.propertyservice.domain.model.property.Property;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -13,10 +12,8 @@ import lombok.Setter;
 @Table(name = "floors")
 @Getter
 @Setter
-public class Floor extends BaseEntity<String> {
+public class Floor extends BaseEntity extends SoftDeletableEntity extends AuditableEntity {
 
-    @Id
-    private String id;
 
     @ManyToOne
     private Property property;
