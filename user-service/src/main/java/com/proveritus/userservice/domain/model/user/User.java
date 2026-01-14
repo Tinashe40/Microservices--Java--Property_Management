@@ -1,203 +1,192 @@
 package com.proveritus.userservice.domain.model.user;
 
-import com.proveritus.cloudutility.core.domain.BaseEntity;
-import com.proveritus.userservice.domain.model.permission.Permission;
-import com.proveritus.userservice.domain.model.usergroup.UserGroup;
-import io.jsonwebtoken.security.Password;
+import com.proveritus.userservice.domain.event.UserCreatedEvent;
+import com.proveritus.cloudutility.jpa.BaseEntity;
 import jakarta.persistence.*;
-
-import java.time.Instant;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
-/**
- * User aggregate root following DDD principles.
- * Contains business logic and invariants.
- */
 @Entity
 @Table(name = "users", indexes = {
-        @Index(name = "idx_user_username", columnList = "username", unique = true),
-        @Index(name = "idx_user_email", columnList = "email", unique = true),
-        @Index(name = "idx_user_enabled_deleted", columnList = "enabled, deleted")
+        @Index(name = "idx_username", columnList = "username", unique = true),
+        @Index(name = "idx_email", columnList = "email", unique = true),
+        @Index(name = "idx_enabled", columnList = "enabled"),
+        @Index(name = "idx_account_locked", columnList = "account_locked")
 })
-public class User extends BaseEntity<Long> {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "username", unique = true, nullable = false, length = 50)
+    @Column(unique = true, nullable = false, length = 50)
     private String username;
 
-    @Embedded
-    private Email email;
+    @Column(unique = true, nullable = false, length = 100)
+    private String email;
 
-    @Embedded
-    private Password password;
+    @Column(nullable = false)
+    private String password;
 
-    @Embedded
-    private UserProfile profile;
+    @Column(nullable = false, length = 50)
+    private String firstName;
 
-    @Embedded
-    private AccountStatus accountStatus;
+    @Column(nullable = false, length = 50)
+    private String lastName;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @Column(length = 20)
+    private String phoneNumber;
+
+    private LocalDateTime passwordLastChanged;
+
+    @Column(nullable = false)
+    private boolean enabled = true;
+
+    @Column(nullable = false)
+    private boolean accountNonExpired = true;
+
+    @Column(nullable = false, name = "account_locked")
+    private boolean accountNonLocked = true;
+
+    @Column(nullable = false)
+    private boolean credentialsNonExpired = true;
+
+    private LocalDateTime lastLoginAt;
+
+    private Integer failedLoginAttempts = 0;
+
+    private LocalDateTime lockedUntil;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(
             name = "user_user_groups",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "user_group_id"),
-            indexes = @Index(name = "idx_user_groups", columnList = "user_id, user_group_id")
+            indexes = {
+                    @Index(name = "idx_user_user_groups_user_id", columnList = "user_id"),
+                    @Index(name = "idx_user_user_groups_group_id", columnList = "user_group_id")
+            }
     )
     private Set<UserGroup> userGroups = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(
             name = "user_permissions",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "permission_id"),
-            indexes = @Index(name = "idx_user_permissions", columnList = "user_id, permission_id")
+            indexes = {
+                    @Index(name = "idx_user_permissions_user_id", columnList = "user_id"),
+                    @Index(name = "idx_user_permissions_permission_id", columnList = "permission_id")
+            }
     )
-    private Set<Permission> directPermissions = new HashSet<>();
+    private Set<Permission> permissions = new HashSet<>();
 
-    protected User() {
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserToken> tokens;
+
+    @Transient
+    private transient UserCreatedEvent domainEvent;
+
+    // ========== Domain Behavior ==========
+
+    public void registerUser(String firstName, String lastName, String phoneNumber) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.passwordLastChanged = LocalDateTime.now();
+        this.enabled = true;
+        this.accountNonLocked = true;
+        this.credentialsNonExpired = true;
+
+        // Publish domain event
+        this.domainEvent = new UserCreatedEvent(this);
     }
 
-    /**
-     * Factory method to create a new user.
-     * Enforces business rules at creation time.
-     */
-    public static User createUser(
-            String username,
-            Email email,
-            Password password,
-            UserProfile profile) {
-
-        User user = new User();
-        user.username = username;
-        user.email = email;
-        user.password = password;
-        user.profile = profile;
-        user.accountStatus = AccountStatus.createActive();
-
-        // Domain event
-        user.registerEvent(new UserCreatedEvent(user.id, username, email.value()));
-
-        return user;
+    public void changePassword(String newEncodedPassword) {
+        this.password = newEncodedPassword;
+        this.passwordLastChanged = LocalDateTime.now();
+        this.credentialsNonExpired = true;
+        this.failedLoginAttempts = 0;
+        this.lockedUntil = null;
     }
 
-    /**
-     * Changes user password with validation.
-     */
-    public void changePassword(Password oldPassword, Password newPassword, PasswordPolicy policy) {
-        if (!this.password.matches(oldPassword)) {
-            throw new InvalidPasswordException("Current password is incorrect");
-        }
-
-        if (!policy.isValid(newPassword)) {
-            throw new PasswordPolicyViolationException("New password doesn't meet policy requirements");
-        }
-
-        this.password = newPassword;
-        this.accountStatus.markPasswordChanged(Instant.now());
-
-        registerEvent(new PasswordChangedEvent(this.id, Instant.now()));
+    public void recordFailedLoginAttempt() {
+        this.failedLoginAttempts = (this.failedLoginAttempts == null ? 0 : this.failedLoginAttempts) + 1;
     }
 
-    /**
-     * Assigns user groups with authorization check.
-     */
-    public void assignUserGroups(Set<UserGroup> userGroups) {
-        this.userGroups.clear();
-        this.userGroups.addAll(userGroups);
-
-        registerEvent(new UserGroupsAssignedEvent(this.id, userGroups.size()));
+    public void lockAccount(LocalDateTime lockUntil) {
+        this.accountNonLocked = false;
+        this.lockedUntil = lockUntil;
     }
 
-    /**
-     * Locks the account after failed login attempts.
-     */
-    public void lockAccount() {
-        accountStatus.lock();
-        registerEvent(new AccountLockedEvent(this.id, Instant.now()));
-    }
-
-    /**
-     * Unlocks the account.
-     */
     public void unlockAccount() {
-        accountStatus.unlock();
-        registerEvent(new AccountUnlockedEvent(this.id, Instant.now()));
+        this.accountNonLocked = true;
+        this.failedLoginAttempts = 0;
+        this.lockedUntil = null;
     }
 
-    /**
-     * Deactivates the user account.
-     */
+    public void recordSuccessfulLogin() {
+        this.failedLoginAttempts = 0;
+        this.lastLoginAt = LocalDateTime.now();
+        this.lockedUntil = null;
+    }
+
+    public void expireCredentials() {
+        this.credentialsNonExpired = false;
+    }
+
     public void deactivate() {
-        accountStatus.deactivate();
-        registerEvent(new UserDeactivatedEvent(this.id, Instant.now()));
+        this.enabled = false;
     }
 
-    /**
-     * Activates the user account.
-     */
     public void activate() {
-        accountStatus.activate();
-        registerEvent(new UserActivatedEvent(this.id, Instant.now()));
+        this.enabled = true;
     }
 
-    /**
-     * Gets all effective permissions (from groups + direct).
-     */
-    public Set<String> getAllPermissions() {
-        Set<String> permissions = new HashSet<>();
-
-        // Add permissions from groups
-        userGroups.forEach(group ->
-            group.getPermissions().forEach(perm ->
-                permissions.add(perm.getName())));
-
-        // Add direct permissions
-        directPermissions.forEach(perm -> permissions.add(perm.getName()));
-
-        return permissions;
+    public boolean isAccountLocked() {
+        if (!accountNonLocked) {
+            if (lockedUntil != null && LocalDateTime.now().isAfter(lockedUntil)) {
+                unlockAccount();
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
-    // Getters
-    @Override
-    public Long getId() {
-        return id;
+    public boolean isCredentialsExpired() {
+        return !credentialsNonExpired;
     }
 
-    @Override
-    public void setId(Long id) {
-        this.id = id;
+    public void assignUserGroup(UserGroup userGroup) {
+        this.userGroups.add(userGroup);
     }
 
-    public String getUsername() {
-        return username;
+    public void removeUserGroup(UserGroup userGroup) {
+        this.userGroups.remove(userGroup);
     }
 
-    public Email getEmail() {
-        return email;
+    public void assignPermission(Permission permission) {
+        this.permissions.add(permission);
     }
 
-    public Password getPassword() {
-        return password;
+    public void removePermission(Permission permission) {
+        this.permissions.remove(permission);
     }
 
-    public UserProfile getProfile() {
-        return profile;
-.    }
-
-    public AccountStatus getAccountStatus() {
-        return accountStatus;
+    public UserCreatedEvent getDomainEvent() {
+        return this.domainEvent;
     }
 
-    public Set<UserGroup> getUserGroups() {
-        return userGroups;
-    }
-
-    public Set<Permission> getDirectPermissions() {
-        return directPermissions;
+    public void clearDomainEvent() {
+        this.domainEvent = null;
     }
 }

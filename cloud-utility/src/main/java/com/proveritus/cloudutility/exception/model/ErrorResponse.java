@@ -8,12 +8,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Standardized error response for API consumers.
- */
- @Getter
- @Builder
- @JsonInclude(JsonInclude.Include.NON_NULL)
+@Getter
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
     
     private final String errorId;

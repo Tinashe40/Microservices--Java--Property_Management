@@ -5,11 +5,11 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.stereotype.Component;
 
 @Component
-public class CustomSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
+public class SecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
 
-    private final CustomPermissionEvaluator permissionEvaluator;
+    private final PermissionEvaluator permissionEvaluator;
 
-    public CustomSecurityExpressionHandler(CustomPermissionEvaluator permissionEvaluator) {
+    public SecurityExpressionHandler(PermissionEvaluator permissionEvaluator) {
         this.permissionEvaluator = permissionEvaluator;
         setPermissionEvaluator(this.permissionEvaluator);
     }

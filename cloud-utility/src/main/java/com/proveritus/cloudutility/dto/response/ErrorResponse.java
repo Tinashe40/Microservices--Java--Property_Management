@@ -8,6 +8,6 @@ import lombok.Setter;
 public class ErrorResponse extends ApiResponse<Object> {
 
     public ErrorResponse(String message) {
-        super.setMessage(message);
+        this.setMessage(message);
     }
 }

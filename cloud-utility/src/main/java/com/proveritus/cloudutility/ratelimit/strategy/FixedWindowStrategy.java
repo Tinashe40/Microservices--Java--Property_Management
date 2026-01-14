@@ -14,7 +14,7 @@ public class FixedWindowStrategy {
     public FixedWindowStrategy(long capacity, Duration duration) {
         Refill refill = Refill.intervally(capacity, duration);
         Bandwidth limit = Bandwidth.classic(capacity, refill);
-        this.bucket = Bucket4j.builder().addLimit(limit).build();
+        this.bucket = io.github.bucket4j.Bucket4j.builder().addLimit(limit).build();
     }
 
     public boolean tryConsume() {

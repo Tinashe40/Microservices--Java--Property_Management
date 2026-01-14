@@ -23,7 +23,7 @@ public class DistributedRateLimiter implements RateLimitService {
             // define your bucket configuration here
             return new GridBucketState();
         };
-        return Bucket4j.extension(io.github.bucket4j.grid.jcache.JCache.class).builder()
+        return io.github.bucket4j.Bucket4j.extension(io.github.bucket4j.grid.jcache.JCache.class).builder()
                 .build(proxyManager, key, stateSupplier);
     }
 }

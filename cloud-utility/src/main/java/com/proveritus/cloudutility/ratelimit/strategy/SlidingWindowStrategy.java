@@ -13,7 +13,7 @@ public class SlidingWindowStrategy {
 
     public SlidingWindowStrategy(long capacity, Duration duration) {
         Bandwidth limit = Bandwidth.slidingWindow(capacity, duration);
-        this.bucket = Bucket4j.builder().addLimit(limit).build();
+        this.bucket = io.github.bucket4j.Bucket4j.builder().addLimit(limit).build();
     }
 
     public boolean tryConsume() {

@@ -1,22 +1,22 @@
 package com.proveritus.userservice.domain.repository;
 
-import com.proveritus.cloudutility.core.port.out.Repository;
-import com.proveritus.userservice.domain.model.user.Email;
-import com.proveritus.userservice.domain.model.user.User;
 
+import com.proveritus.cloudutility.jpa.BaseDao;
+import com.proveritus.userservice.domain.model.user.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
 import java.util.Optional;
 
-/**
- * User repository interface (port).
- * Infrastructure layer implements this.
- */
-public interface UserRepository extends Repository<User, Long> {
-    
-    Optional<User> findByUsername(String username);
-    
-    Optional<User> findByEmail(Email email);
-    
-    boolean existsByUsername(String username);
-    
-    boolean existsByEmail(Email email);
+@Repository
+public interface UserRepository extends BaseDao<User, Long> {
+    Optional<User> findByUsernameAndDeletedFalse(String username);
+    Optional<User> findByEmailAndDeletedFalse(String email);
+    Boolean existsByUsernameAndDeletedFalse(String username);
+    Boolean existsByEmailAndDeletedFalse(String email);
+    Page<User> findAllByDeletedFalse(Pageable pageable);
+    Optional<User> findByIdAndDeletedFalse(Long id);
+    Collection<Object> findByEmail(String email);
 }

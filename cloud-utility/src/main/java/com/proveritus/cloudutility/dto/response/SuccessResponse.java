@@ -8,7 +8,7 @@ import lombok.Setter;
 public class SuccessResponse<T> extends ApiResponse<T> {
 
     public SuccessResponse(T data) {
-        super.setData(data);
-        super.setMessage("Success");
+        this.setData(data);
+        this.setMessage("Success");
     }
 }

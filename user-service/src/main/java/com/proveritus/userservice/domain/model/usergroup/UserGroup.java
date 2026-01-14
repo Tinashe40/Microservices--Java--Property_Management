@@ -1,38 +1,33 @@
 package com.proveritus.userservice.domain.model.usergroup;
 
-import com.proveritus.cloudutility.core.domain.BaseEntity;
+import com.proveritus.cloudutility.jpa.BaseEntity;
 import com.proveritus.userservice.domain.model.permission.Permission;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
+@EqualsAndHashCode(callSuper = true, exclude = "permissions")
 @Entity
 @Table(name = "user_groups")
 @Getter
 @Setter
-public class UserGroup extends BaseEntity<Long> {
+@ToString(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserGroup extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @Column(unique = true, nullable = false)
     private String name;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "user_group_permissions",
-            joinColumns = @JoinColumn(name = "user_group_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id")
-    )
-    private Set<Permission> permissions;
+    public UserGroup(String name) {
+        this.name = name;
+    }
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
+    @JoinTable(name = "role_permissions",
+            joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id", referencedColumnName = "id"))
+    private Set<Permission> permissions = new HashSet<>();
 }
