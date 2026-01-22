@@ -1,6 +1,7 @@
 package com.proveritus.userservice.passwordManager.service;
 
-import com.tinash.cloud.utility.password.dto.PasswordPolicyDTO;
+
+import com.proveritus.cloudutility.password.dto.PasswordPolicyDTO;
 
 public interface PasswordPolicyService {
 

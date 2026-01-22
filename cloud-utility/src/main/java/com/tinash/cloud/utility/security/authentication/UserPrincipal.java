@@ -1,4 +1,4 @@
-package com.proveritus.cloudutility.security.authentication;
+package com.tinash.cloud.utility.security.authentication;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;

@@ -1,6 +1,6 @@
-package com.proveritus.cloudutility.security;
+package com.tinash.cloud.utility.security;
 
-import com.tinash.cloud.utility.dto.common.UserDto;
+import com.tinash.cloud.utility.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

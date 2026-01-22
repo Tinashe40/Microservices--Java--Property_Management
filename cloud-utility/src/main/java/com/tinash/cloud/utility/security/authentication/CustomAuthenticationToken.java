@@ -1,4 +1,4 @@
-package com.proveritus.cloudutility.security.authentication;
+package com.tinash.cloud.utility.security.authentication;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;

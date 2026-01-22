@@ -93,4 +93,22 @@ public final class Permissions {
         public static final String UNASSIGN_PERMISSIONS = "permission:unassign-permissions";
         public static final String UNASSIGN_GROUPS = "permission:unassign-groups";
     }
+
+    public static final class PasswordPolicy {
+        private PasswordPolicy() {}
+        public static final String CREATE_PASSWORD_POLICY = "passwordPolicy:create-password-policy";
+        public static final String VIEW_PASSWORD_POLICY = "passwordPolicy:view-password-policy";
+        public static final String UPDATE_PASSWORD_POLICY = "passwordPolicy:update-password-policy";
+        public static final String DELETE_PASSWORD_POLICY = "passwordPolicy:delete-password-policy";
+        public static final String RESET_PASSWORD_POLICY = "passwordPolicy:reset-password-policy";
+
+    }
+    public static final class Password {
+        private Password() {}
+        public static final String CREATE = "password:create";
+        public static final String READ = "password:read";
+        public static final String UPDATE = "password:update";
+        public static final String RESET_PASSWORD = "password:reset-password";
+
+    }
 }

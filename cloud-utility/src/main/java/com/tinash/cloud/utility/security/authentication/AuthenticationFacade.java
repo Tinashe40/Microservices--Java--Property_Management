@@ -1,4 +1,4 @@
-package com.proveritus.cloudutility.security.authentication;
+package com.tinash.cloud.utility.security.authentication;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

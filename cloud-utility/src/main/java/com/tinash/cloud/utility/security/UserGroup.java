@@ -1,4 +1,4 @@
-package com.proveritus.cloudutility.security;
+package com.tinash.cloud.utility.security;
 
 public final class UserGroup {
     private UserGroup() {}

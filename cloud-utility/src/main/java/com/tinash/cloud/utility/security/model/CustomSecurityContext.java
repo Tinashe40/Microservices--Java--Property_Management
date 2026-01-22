@@ -8,5 +8,5 @@ import org.springframework.security.core.context.SecurityContext;
 @AllArgsConstructor
 public class CustomSecurityContext {
 
-    private final org.springframework.security.core.context.SecurityContext securityContext;
+    private final SecurityContext securityContext;
 }
