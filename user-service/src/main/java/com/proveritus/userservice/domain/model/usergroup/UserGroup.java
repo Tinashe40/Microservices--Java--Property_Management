@@ -1,6 +1,6 @@
 package com.proveritus.userservice.domain.model.usergroup;
 
-import com.proveritus.cloudutility.jpa.BaseEntity;
+import com.tinash.cloud.utility.jpa.BaseEntity;
 import com.proveritus.userservice.domain.model.permission.Permission;
 import jakarta.persistence.*;
 import lombok.*;

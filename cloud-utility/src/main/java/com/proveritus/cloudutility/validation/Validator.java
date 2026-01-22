@@ -1,6 +1,6 @@
 package com.proveritus.cloudutility.validation;
 
-import com.proveritus.cloudutility.exception.business.ValidationException;
+import com.tinash.cloud.utility.exception.business.ValidationException;
 
 import java.util.*;
 

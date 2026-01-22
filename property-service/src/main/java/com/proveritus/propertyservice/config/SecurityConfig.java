@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.config;
 
-import com.proveritus.cloudutility.config.BaseSecurityConfig;
+import com.tinash.cloud.utility.config.BaseSecurityConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;

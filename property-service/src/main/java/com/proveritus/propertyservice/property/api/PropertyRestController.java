@@ -1,8 +1,8 @@
 package com.proveritus.propertyservice.property.api;
 
-import com.proveritus.cloudutility.audit.annotation.Auditable;
+import com.tinash.cloud.utility.audit.annotation.Auditable;
 
-import com.proveritus.cloudutility.enums.PropertyType;
+import com.tinash.cloud.utility.enums.PropertyType;
 
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
 

@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.unit.mapper;
 
-import com.proveritus.cloudutility.jpa.EntityDtoMapper;
+import com.tinash.cloud.utility.jpa.EntityDtoMapper;
 import com.proveritus.propertyservice.unit.domain.Unit;
 import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import org.mapstruct.Mapper;

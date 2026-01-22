@@ -1,6 +1,6 @@
 package com.proveritus.cloudutility.validation.annotation;
 
-import com.proveritus.cloudutility.validation.validators.EmailValidator;
+import com.tinash.cloud.utility.validation.validators.EmailValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 

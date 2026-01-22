@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.application.port.out;
 
-import com.proveritus.cloudutility.dto.UserDTO;
+import com.tinash.cloud.utility.dto.UserDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +10,6 @@ import java.util.Optional;
  * Follows Dependency Inversion Principle.
  */
 public interface UserServicePort {
-    Optional<UserDTO> findUserById(String userId);
-    List<UserDTO> findUsersByIds(List<String> userIds);
+    Optional<UserDto> findUserById(String userId);
+    List<UserDto> findUsersByIds(List<String> userIds);
 }

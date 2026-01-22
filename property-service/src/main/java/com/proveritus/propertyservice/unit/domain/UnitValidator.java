@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.unit.domain;
 
-import com.proveritus.cloudutility.enums.RentType;
-import com.proveritus.cloudutility.exception.*;
+import com.tinash.cloud.utility.enums.RentType;
+import com.tinash.cloud.utility.exception.*;
 import com.proveritus.propertyservice.floor.domain.FloorRepository;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
 import com.proveritus.propertyservice.unit.dto.UnitDTO;

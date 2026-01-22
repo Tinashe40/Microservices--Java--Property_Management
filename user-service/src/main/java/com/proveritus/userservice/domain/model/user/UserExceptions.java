@@ -1,6 +1,6 @@
 package com.proveritus.userservice.domain.model.user;
 
-import com.proveritus.cloudutility.core.exception.BusinessException;
+import com.tinash.cloud.utility.core.exception.BusinessException;
 
 public class InvalidPasswordException extends BusinessException {
     public InvalidPasswordException(String message) {

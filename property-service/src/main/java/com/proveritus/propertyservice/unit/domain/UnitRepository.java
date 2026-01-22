@@ -1,7 +1,6 @@
 package com.proveritus.propertyservice.unit.domain;
 
-import com.proveritus.cloudutility.jpa.BaseDao;
-import com.proveritus.cloudutility.enums.*;
+import com.tinash.cloud.utility.jpa.BaseDao;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;

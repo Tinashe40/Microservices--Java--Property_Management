@@ -1,7 +1,7 @@
 package com.proveritus.cloudutility.exception.handler;
 
-import com.proveritus.cloudutility.exception.model.ApiError;
-import com.proveritus.cloudutility.exception.model.ValidationError;
+import com.tinash.cloud.utility.exception.model.ApiError;
+import com.tinash.cloud.utility.exception.model.ValidationError;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

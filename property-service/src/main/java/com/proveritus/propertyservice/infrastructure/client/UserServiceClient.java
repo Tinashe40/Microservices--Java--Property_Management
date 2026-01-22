@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.infrastructure.client;
 
-import com.proveritus.cloudutility.dto.UserDTO;
+import com.tinash.cloud.utility.dto.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,8 +12,8 @@ import java.util.List;
 public interface UserServiceClient {
 
     @GetMapping("/api/users/{id}")
-    UserDTO getUserById(@PathVariable("id") String id);
+    UserDto getUserById(@PathVariable("id") String id);
 
     @GetMapping("/api/users")
-    List<UserDTO> getUsersByIds(@RequestParam("ids") List<String> ids);
+    List<UserDto> getUsersByIds(@RequestParam("ids") List<String> ids);
 }

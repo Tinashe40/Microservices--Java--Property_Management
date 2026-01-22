@@ -1,10 +1,10 @@
 package com.proveritus.cloudutility.exception.handler;
 
-import com.proveritus.cloudutility.exception.base.BusinessException;
-import com.proveritus.cloudutility.exception.base.TechnicalException;
-import com.proveritus.cloudutility.exception.business.ResourceNotFoundException;
-import com.proveritus.cloudutility.exception.business.ValidationException;
-import com.proveritus.cloudutility.exception.model.ErrorResponse;
+import com.tinash.cloud.utility.exception.base.BusinessException;
+import com.tinash.cloud.utility.exception.base.TechnicalException;
+import com.tinash.cloud.utility.exception.business.ResourceNotFoundException;
+import com.tinash.cloud.utility.exception.business.ValidationException;
+import com.tinash.cloud.utility.exception.model.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;

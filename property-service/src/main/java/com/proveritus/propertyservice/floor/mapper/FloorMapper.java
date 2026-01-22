@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.floor.mapper;
 
-import com.proveritus.cloudutility.jpa.EntityDtoMapper;
+import com.tinash.cloud.utility.jpa.EntityDtoMapper;
 import com.proveritus.propertyservice.floor.domain.Floor;
 import com.proveritus.propertyservice.floor.dto.FloorDTO;
 import com.proveritus.propertyservice.unit.mapper.UnitMapper;

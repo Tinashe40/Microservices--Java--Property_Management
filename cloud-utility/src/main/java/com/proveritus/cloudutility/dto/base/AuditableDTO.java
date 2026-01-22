@@ -8,7 +8,7 @@ import java.time.Instant;
 
 @Getter
 @Setter
-public abstract class AuditableDTO<ID extends Serializable> extends BaseDTO<ID> {
+public abstract class AuditableDTO<ID extends Serializable> extends BaseDto {
 
     private String createdBy;
     private Instant createdDate;

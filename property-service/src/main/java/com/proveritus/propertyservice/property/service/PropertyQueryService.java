@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.property.service;
 
-import com.proveritus.cloudutility.enums.PropertyType;
+import com.tinash.cloud.utility.enums.PropertyType;
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
 import com.proveritus.propertyservice.property.dto.PropertyFilterDTO;
 import org.springframework.data.domain.Page;

@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.floor.api;
 
-import com.proveritus.cloudutility.audit.annotation.Auditable;
+import com.tinash.cloud.utility.audit.annotation.Auditable;
 
 import com.proveritus.propertyservice.floor.dto.*;
 import com.proveritus.propertyservice.floor.service.*;

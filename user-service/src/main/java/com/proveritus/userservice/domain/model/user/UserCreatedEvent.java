@@ -1,6 +1,6 @@
 package com.proveritus.userservice.domain.model.user;
 
-import com.proveritus.cloudutility.core.domain.DomainEvent;
+import com.tinash.cloud.utility.core.domain.DomainEvent;
 
 public class UserCreatedEvent extends DomainEvent {
     private final Long userId;

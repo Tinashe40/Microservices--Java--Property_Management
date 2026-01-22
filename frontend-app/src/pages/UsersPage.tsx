@@ -39,7 +39,7 @@ import {
 } from '../api/userService';
 import { useRoles } from '../api/rolesService';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { UserDTO } from '../api/authService';
+import { UserDto } from '../api/authService';
 import { useSnackbar } from '../contexts/SnackbarProvider';
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -60,7 +60,7 @@ const UsersPage = () => {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserDTO | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
   const [newUser, setNewUser] = useState({
     username: '',
     email: '',
@@ -106,7 +106,7 @@ const UsersPage = () => {
   };
   const handleCreateClose = () => setCreateOpen(false);
 
-  const handleManageOpen = (user: UserDTO) => {
+  const handleManageOpen = (user: UserDto) => {
     setSelectedUser(user);
     setManageOpen(true);
   };

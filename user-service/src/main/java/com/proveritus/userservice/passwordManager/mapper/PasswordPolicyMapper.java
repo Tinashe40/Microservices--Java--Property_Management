@@ -1,0 +1,24 @@
+package com.proveritus.userservice.passwordManager.mapper;
+
+import com.tinash.cloud.utility.password.dto.PasswordPolicyDTO;
+import com.proveritus.userservice.passwordManager.domain.model.PasswordPolicy;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
+@Mapper(componentModel = "spring")
+public interface PasswordPolicyMapper {
+
+    @Mapping(source = "passwordHistoryCount", target = "passwordHistorySize")
+    PasswordPolicyDTO toDto(PasswordPolicy entity);
+
+    @Mapping(source = "passwordHistorySize", target = "passwordHistoryCount")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    void updateEntityFromDto(PasswordPolicyDTO dto, @MappingTarget PasswordPolicy entity);
+}

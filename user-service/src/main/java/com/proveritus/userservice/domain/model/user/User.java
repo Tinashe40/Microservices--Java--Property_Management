@@ -1,7 +1,7 @@
 package com.proveritus.userservice.domain.model.user;
 
 import com.proveritus.userservice.domain.event.UserCreatedEvent;
-import com.proveritus.cloudutility.jpa.BaseEntity;
+import com.tinash.cloud.utility.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

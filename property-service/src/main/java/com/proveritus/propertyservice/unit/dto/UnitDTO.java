@@ -1,7 +1,6 @@
 package com.proveritus.propertyservice.unit.dto;
 
-import com.proveritus.cloudutility.enums.*;
-import com.proveritus.cloudutility.jpa.Updatable;
+import com.tinash.cloud.utility.jpa.Updatable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { UserDTO, fetchCurrentUser } from '../api/authService';
+import { UserDto, fetchCurrentUser } from '../api/authService';
 
 interface AuthContextType {
-  user: UserDTO | null;
+  user: UserDto | null;
   token: string | null;
-  login: (token: string, user: UserDTO) => void;
+  login: (token: string, user: UserDto) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -14,13 +14,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient();
-  const [user, setUser] = useState<UserDTO | null>(() => {
+  const [user, setUser] = useState<UserDto | null>(() => {
     const storedUser = sessionStorage.getItem('user');
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const [token, setToken] = useState<string | null>(() => sessionStorage.getItem('token'));
 
-  const { data: currentUser, isLoading, error } = useQuery<UserDTO, Error>({
+  const { data: currentUser, isLoading, error } = useQuery<UserDto, Error>({
     queryKey: ['currentUser'],
     queryFn: fetchCurrentUser,
     enabled: !!token && !user,
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [error]);
 
-  const login = (newToken: string, user: UserDTO) => {
+  const login = (newToken: string, user: UserDto) => {
     sessionStorage.setItem('token', newToken);
     sessionStorage.setItem('user', JSON.stringify(user));
     setToken(newToken);

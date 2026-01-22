@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.property.domain;
 
-import com.proveritus.cloudutility.enums.PropertyType;
-import com.proveritus.cloudutility.jpa.BaseDao;
+import com.tinash.cloud.utility.enums.PropertyType;
+import com.tinash.cloud.utility.jpa.BaseDao;
 import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
 
 import org.springframework.data.domain.Page;
@@ -47,14 +47,14 @@ public interface PropertyRepository extends BaseDao<Property, String>, JpaSpecif
             SELECT new com.proveritus.propertyservice.property.dto.PropertyStatsDTO(
                 (SELECT COUNT(f) FROM Floor f WHERE f.property.id = p.id),
                 (SELECT COUNT(u) FROM Unit u WHERE u.property.id = p.id),
-                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END), 0),
-                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END), 0),
-                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.RESERVED THEN 1 ELSE 0 END), 0),
-                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.NOT_AVAILABLE THEN 1 ELSE 0 END), 0),
-                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.UNDER_MAINTENANCE THEN 1 ELSE 0 END), 0),
-                CASE WHEN (SELECT COUNT(u) FROM Unit u WHERE u.property.id = p.id) > 0 THEN (COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END), 0) * 100.0) / (SELECT COUNT(u) FROM Unit u WHERE u.property.id = p.id) ELSE 0.0 END,
-                CASE WHEN (SELECT COUNT(u) FROM Unit u WHERE u.property.id = p.id) > 0 THEN (COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END), 0) * 100.0) / (SELECT COUNT(u) FROM Unit u WHERE u.property.id = p.id) ELSE 0.0 END,
-                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN u.monthlyRent ELSE 0 END), 0.0),
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.RESERVED THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.NOT_AVAILABLE THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.UNDER_MAINTENANCE THEN 1 ELSE 0 END), 0),
+                CASE WHEN (SELECT COUNT(u) FROM Unit u WHERE u.property.id = p.id) > 0 THEN (COALESCE(SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END), 0) * 100.0) / (SELECT COUNT(u) FROM Unit u WHERE u.property.id = p.id) ELSE 0.0 END,
+                CASE WHEN (SELECT COUNT(u) FROM Unit u WHERE u.property.id = p.id) > 0 THEN (COALESCE(SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END), 0) * 100.0) / (SELECT COUNT(u) FROM Unit u WHERE u.property.id = p.id) ELSE 0.0 END,
+                COALESCE(SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.OCCUPIED THEN u.monthlyRent ELSE 0 END), 0.0),
                 COALESCE(SUM(u.monthlyRent), 0.0)
             )
             FROM Property p
@@ -68,14 +68,14 @@ public interface PropertyRepository extends BaseDao<Property, String>, JpaSpecif
             SELECT new com.proveritus.propertyservice.property.dto.PropertyStatsDTO(
                 SUM(CASE WHEN f.id IS NOT NULL THEN 1 ELSE 0 END),
                 SUM(CASE WHEN u.id IS NOT NULL THEN 1 ELSE 0 END),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.RESERVED THEN 1 ELSE 0 END),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.NOT_AVAILABLE THEN 1 ELSE 0 END),
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.UNDER_MAINTENANCE THEN 1 ELSE 0 END),
-                CASE WHEN COUNT(u) > 0 THEN (SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END) * 100.0) / COUNT(u) ELSE 0.0 END,
-                CASE WHEN COUNT(u) > 0 THEN (SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END) * 100.0) / COUNT(u) ELSE 0.0 END,
-                SUM(CASE WHEN u.occupancyStatus = com.proveritus.cloudutility.enums.OccupancyStatus.OCCUPIED THEN u.monthlyRent ELSE 0 END),
+                SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END),
+                SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END),
+                SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.RESERVED THEN 1 ELSE 0 END),
+                SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.NOT_AVAILABLE THEN 1 ELSE 0 END),
+                SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.UNDER_MAINTENANCE THEN 1 ELSE 0 END),
+                CASE WHEN COUNT(u) > 0 THEN (SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.OCCUPIED THEN 1 ELSE 0 END) * 100.0) / COUNT(u) ELSE 0.0 END,
+                CASE WHEN COUNT(u) > 0 THEN (SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.AVAILABLE THEN 1 ELSE 0 END) * 100.0) / COUNT(u) ELSE 0.0 END,
+                SUM(CASE WHEN u.occupancyStatus = com.tinash.cloud.utility.enums.OccupancyStatus.OCCUPIED THEN u.monthlyRent ELSE 0 END),
                 SUM(u.monthlyRent)
             )
             FROM Property p

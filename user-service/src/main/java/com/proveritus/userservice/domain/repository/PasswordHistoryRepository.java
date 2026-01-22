@@ -1,7 +1,7 @@
 package com.proveritus.userservice.domain.repository;
 
 import com.proveritus.userservice.domain.model.user.PasswordHistory;
-import com.proveritus.cloudutility.jpa.BaseDao;
+import com.tinash.cloud.utility.jpa.BaseDao;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;

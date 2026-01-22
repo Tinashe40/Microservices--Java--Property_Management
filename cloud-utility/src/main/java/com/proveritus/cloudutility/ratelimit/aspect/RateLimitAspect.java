@@ -1,7 +1,7 @@
 package com.proveritus.cloudutility.ratelimit.aspect;
 
-import com.proveritus.cloudutility.ratelimit.annotation.RateLimit;
-import com.proveritus.cloudutility.ratelimit.service.RateLimitService;
+import com.tinash.cloud.utility.ratelimit.annotation.RateLimit;
+import com.tinash.cloud.utility.ratelimit.service.RateLimitService;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import jakarta.servlet.http.HttpServletRequest;

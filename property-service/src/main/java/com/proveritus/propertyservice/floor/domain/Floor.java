@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.floor.domain;
 
-import com.proveritus.cloudutility.jpa.BaseEntity;
+import com.tinash.cloud.utility.jpa.BaseEntity;
 import com.proveritus.propertyservice.property.domain.Property;
 import com.proveritus.propertyservice.unit.domain.Unit;
 import jakarta.persistence.*;

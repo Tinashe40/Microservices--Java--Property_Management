@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.floor.dto;
 
-import com.proveritus.cloudutility.jpa.Updatable;
+import com.tinash.cloud.utility.jpa.Updatable;
 import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

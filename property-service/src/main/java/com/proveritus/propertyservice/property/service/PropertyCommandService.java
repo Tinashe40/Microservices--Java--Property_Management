@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.property.service;
 
-import com.proveritus.cloudutility.jpa.DomainService;
+import com.tinash.cloud.utility.jpa.DomainService;
 import com.proveritus.propertyservice.property.domain.Property;
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
 

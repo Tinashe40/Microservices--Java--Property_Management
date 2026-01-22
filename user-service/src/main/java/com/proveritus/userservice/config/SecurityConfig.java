@@ -1,7 +1,7 @@
 package com.proveritus.userservice.config;
 
-import com.proveritus.cloudutility.config.BaseSecurityConfig;
-import com.proveritus.cloudutility.config.PublicApiEndpoint;
+import com.tinash.cloud.utility.config.BaseSecurityConfig;
+import com.tinash.cloud.utility.config.PublicApiEndpoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

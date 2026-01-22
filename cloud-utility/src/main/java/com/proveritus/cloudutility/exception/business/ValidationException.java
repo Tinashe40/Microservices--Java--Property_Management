@@ -1,6 +1,6 @@
 package com.proveritus.cloudutility.exception.business;
 
-import com.proveritus.cloudutility.exception.base.BusinessException;
+import com.tinash.cloud.utility.exception.base.BusinessException;
 
 import java.util.Collections;
 import java.util.List;

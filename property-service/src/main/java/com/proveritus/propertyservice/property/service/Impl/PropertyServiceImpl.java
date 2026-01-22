@@ -1,11 +1,11 @@
 package com.proveritus.propertyservice.property.service.Impl;
 
-import com.proveritus.cloudutility.audit.annotation.Auditable;
-import com.proveritus.cloudutility.dto.UserDTO;
-import com.proveritus.cloudutility.enums.OccupancyStatus;
-import com.proveritus.cloudutility.enums.PropertyType;
-import com.proveritus.cloudutility.jpa.DomainServiceImpl;
-import com.proveritus.cloudutility.security.util.SecurityUtils;
+import com.tinash.cloud.utility.audit.annotation.Auditable;
+import com.tinash.cloud.utility.dto.UserDto;
+import com.tinash.cloud.utility.enums.OccupancyStatus;
+import com.tinash.cloud.utility.enums.PropertyType;
+import com.tinash.cloud.utility.jpa.DomainServiceImpl;
+import com.tinash.cloud.utility.security.util.SecurityUtils;
 import com.proveritus.propertyservice.property.domain.Property;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
 import com.proveritus.propertyservice.property.domain.PropertySpecification;
@@ -61,7 +61,7 @@ public class PropertyServiceImpl extends DomainServiceImpl<Property, PropertyDTO
         log.info("Creating new property: {}", propertyDTO.getName());
         propertyValidator.validate(propertyDTO);
 
-        UserDTO currentUser = SecurityUtils.getCurrentUserDTO().orElseThrow(() -> new AccessDeniedException("User not authenticated"));
+        UserDto currentUser = SecurityUtils.getCurrentUserDTO().orElseThrow(() -> new AccessDeniedException("User not authenticated"));
         propertyDTO.setManagedBy(String.valueOf(currentUser.getId()));
 
         Property property = propertyMapper.fromCreateDto(propertyDTO);
@@ -77,7 +77,7 @@ public class PropertyServiceImpl extends DomainServiceImpl<Property, PropertyDTO
     public void createProperties(List<PropertyDTO> propertyDTOs) {
         log.info("Batch creating {} properties", propertyDTOs.size());
 
-        UserDTO currentUser = SecurityUtils.getCurrentUserDTO().orElseThrow(() -> new AccessDeniedException("User not authenticated"));
+        UserDto currentUser = SecurityUtils.getCurrentUserDTO().orElseThrow(() -> new AccessDeniedException("User not authenticated"));
 
         List<Property> properties = propertyDTOs.stream()
                 .peek(dto -> {

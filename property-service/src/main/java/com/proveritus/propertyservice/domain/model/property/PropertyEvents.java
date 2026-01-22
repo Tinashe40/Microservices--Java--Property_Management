@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.domain.model.property;
 
-import com.proveritus.cloudutility.core.domain.DomainEvent;
+import com.tinash.cloud.utility.core.domain.DomainEvent;
 
 public class PropertyUpdatedEvent extends DomainEvent {
     private final String propertyId;

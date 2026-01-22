@@ -1,3 +1,10 @@
 spring:
   application:
     name: cloud-utility
+
+app:
+  security:
+    jwt:
+      expiration: 86400000
+      issuer: CloudUtility
+      secret:

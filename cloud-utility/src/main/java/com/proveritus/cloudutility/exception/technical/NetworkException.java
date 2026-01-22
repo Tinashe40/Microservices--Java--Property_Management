@@ -1,6 +1,6 @@
 package com.proveritus.cloudutility.exception.technical;
 
-import com.proveritus.cloudutility.exception.base.TechnicalException;
+import com.tinash.cloud.utility.exception.base.TechnicalException;
 
 /**
  * Exception thrown for network-related errors.

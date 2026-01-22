@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.application.service;
 
-import com.proveritus.cloudutility.dto.UserDTO;
+import com.tinash.cloud.utility.dto.UserDto;
 import com.proveritus.propertyservice.application.port.out.UserServicePort;
 import com.proveritus.propertyservice.domain.model.property.PropertyDTO;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class PropertyEnrichmentService {
             return properties;
         }
 
-        Map<String, UserDTO> userMap = userServicePort.findUsersByIds(managerIds)
+        Map<String, UserDto> userMap = userServicePort.findUsersByIds(managerIds)
                 .stream()
                 .collect(Collectors.toMap(
                         user -> String.valueOf(user.getId()),

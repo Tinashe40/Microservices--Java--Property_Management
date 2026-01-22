@@ -1,6 +1,6 @@
 package com.proveritus.cloudutility.exception.domain;
 
-import com.proveritus.cloudutility.exception.base.BusinessException;
+import com.tinash.cloud.utility.exception.base.BusinessException;
 
 /**
  * Base exception for domain-specific errors.

@@ -1,6 +1,5 @@
 package com.proveritus.propertyservice.property.service.enrichment;
 
-import com.proveritus.cloudutility.dto.UserDTO;
 import com.proveritus.propertyservice.client.UserClient;
 import com.proveritus.propertyservice.property.domain.Property;
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
@@ -25,7 +24,7 @@ public class UserEnrichmentService {
     public void enrichPropertyDTOWithUserDetails(Property property, PropertyDTO propertyDTO) {
         if (property.getManagedBy() != null) {
             try {
-                UserDTO userDTO = userClient.getUserById(property.getManagedBy());
+                UserDto userDTO = userClient.getUserById(property.getManagedBy());
                 propertyDTO.setManagedByDetails(userDTO);
             } catch (FeignException e) {
                 log.error("Unable to fetch user details for user id: {}", property.getManagedBy(), e);
@@ -44,9 +43,9 @@ public class UserEnrichmentService {
         }
 
         try {
-            List<UserDTO> userDTOs = userClient.getUsersByIds(userIds);
-            Map<Long, UserDTO> userMap = userDTOs.stream()
-                    .collect(Collectors.toMap(UserDTO::getId, user -> user));
+            List<UserDto> userDTOs = userClient.getUsersByIds(userIds);
+            Map<Long, UserDto> userMap = userDTOs.stream()
+                    .collect(Collectors.toMap(UserDto::getId, user -> user));
 
             propertyDTOs.forEach(dto -> {
                 if (dto.getManagedBy() != null) {

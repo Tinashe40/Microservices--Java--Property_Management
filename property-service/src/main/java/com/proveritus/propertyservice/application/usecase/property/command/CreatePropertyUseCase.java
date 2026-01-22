@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.application.usecase.property.command;
 
-import com.proveritus.cloudutility.core.application.UseCase;
-import com.proveritus.cloudutility.core.application.Command;
+import com.tinash.cloud.utility.core.application.UseCase;
+import com.tinash.cloud.utility.core.application.Command;
 import com.proveritus.propertyservice.application.port.out.EventPublisherPort;
 import com.proveritus.propertyservice.domain.model.property.*;
 import com.proveritus.propertyservice.domain.repository.PropertyRepository;

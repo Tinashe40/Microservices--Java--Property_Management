@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.domain.model.property;
 
-import com.proveritus.cloudutility.core.domain.BaseEntity;
-import com.proveritus.cloudutility.core.domain.DomainEvent;
+import com.tinash.cloud.utility.core.domain.BaseEntity;
+import com.tinash.cloud.utility.core.domain.DomainEvent;
 import com.proveritus.propertyservice.domain.model.floor.Floor;
 import jakarta.persistence.*;
 import lombok.Getter;

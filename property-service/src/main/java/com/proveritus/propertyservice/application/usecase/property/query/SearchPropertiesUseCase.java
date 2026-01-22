@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.application.usecase.property.query;
 
-import com.proveritus.cloudutility.core.application.UseCase;
+import com.tinash.cloud.utility.core.application.UseCase;
 import com.proveritus.propertyservice.application.service.PropertyEnrichmentService;
 import com.proveritus.propertyservice.domain.model.property.Property;
 import com.proveritus.propertyservice.domain.model.property.PropertyDTO;

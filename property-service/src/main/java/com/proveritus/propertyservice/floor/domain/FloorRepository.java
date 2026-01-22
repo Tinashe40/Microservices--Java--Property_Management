@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.floor.domain;
 
-import com.proveritus.cloudutility.jpa.BaseDao;
+import com.tinash.cloud.utility.jpa.BaseDao;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 

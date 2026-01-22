@@ -1,7 +1,7 @@
 package com.proveritus.cloudutility.validation.validators;
 
-import com.proveritus.cloudutility.validation.ValidationResult;
-import com.proveritus.cloudutility.validation.Validator;
+import com.tinash.cloud.utility.validation.ValidationResult;
+import com.tinash.cloud.utility.validation.Validator;
 
 public class NotNullValidator implements Validator<Object> {
 

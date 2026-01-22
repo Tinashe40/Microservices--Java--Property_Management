@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.floor.service;
 
-import com.proveritus.cloudutility.exception.ResourceNotFoundException;
-import com.proveritus.cloudutility.jpa.DomainService;
+import com.tinash.cloud.utility.exception.ResourceNotFoundException;
+import com.tinash.cloud.utility.jpa.DomainService;
 import com.proveritus.propertyservice.floor.domain.Floor;
 import com.proveritus.propertyservice.floor.dto.FloorDTO;
 import com.proveritus.propertyservice.floor.dto.FloorOccupancyStats;

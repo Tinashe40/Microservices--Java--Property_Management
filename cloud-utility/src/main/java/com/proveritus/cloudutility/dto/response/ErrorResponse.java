@@ -1,5 +1,6 @@
 package com.proveritus.cloudutility.dto.response;
 
+import com.tinash.cloud.utility.dto.response.ApiResponse;
 import lombok.Getter;
 import lombok.Setter;
 

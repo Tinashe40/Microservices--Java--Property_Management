@@ -1,7 +1,8 @@
 package com.proveritus.cloudutility.validation.validators;
 
-import com.proveritus.cloudutility.validation.ValidationResult;
-import com.proveritus.cloudutility.validation.Validator;
+
+import com.tinash.cloud.utility.validation.ValidationResult;
+import com.tinash.cloud.utility.validation.Validator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Pattern;

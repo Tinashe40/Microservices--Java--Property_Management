@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.unit.api;
 
-import com.proveritus.cloudutility.audit.annotation.Auditable;
-import com.proveritus.cloudutility.enums.OccupancyStatus;
+import com.tinash.cloud.utility.audit.annotation.Auditable;
+import com.tinash.cloud.utility.enums.OccupancyStatus;
 import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import com.proveritus.propertyservice.unit.service.UnitService;
 import com.proveritus.propertyservice.util.PageableFactory;

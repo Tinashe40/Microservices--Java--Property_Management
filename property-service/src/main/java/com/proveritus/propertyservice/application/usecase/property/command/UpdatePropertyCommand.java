@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.application.usecase.property.command;
 
-import com.proveritus.cloudutility.core.application.Command;
+import com.tinash.cloud.utility.core.application.Command;
 import com.proveritus.propertyservice.domain.model.property.PropertyType;
 
 public record UpdatePropertyCommand(

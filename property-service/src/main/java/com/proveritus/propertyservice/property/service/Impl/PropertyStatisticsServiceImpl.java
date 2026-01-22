@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.property.service.Impl;
 
-import com.proveritus.cloudutility.enums.OccupancyStatus;
-import com.proveritus.cloudutility.enums.PropertyType;
+import com.tinash.cloud.utility.enums.OccupancyStatus;
+import com.tinash.cloud.utility.enums.PropertyType;
 import com.proveritus.propertyservice.property.domain.PropertyRepository;
 import com.proveritus.propertyservice.property.dto.PropertyStatsDTO;
 import com.proveritus.propertyservice.property.dto.SystemStatsDTO;

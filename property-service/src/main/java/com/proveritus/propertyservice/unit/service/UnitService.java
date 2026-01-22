@@ -1,8 +1,8 @@
 package com.proveritus.propertyservice.unit.service;
 
-import com.proveritus.cloudutility.enums.OccupancyStatus;
-import com.proveritus.cloudutility.exception.ResourceNotFoundException;
-import com.proveritus.cloudutility.jpa.DomainService;
+import com.tinash.cloud.utility.enums.OccupancyStatus;
+import com.tinash.cloud.utility.exception.ResourceNotFoundException;
+import com.tinash.cloud.utility.jpa.DomainService;
 import com.proveritus.propertyservice.unit.domain.Unit;
 import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import org.springframework.data.domain.Page;

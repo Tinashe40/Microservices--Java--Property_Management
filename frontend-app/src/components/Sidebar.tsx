@@ -26,7 +26,7 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import { useAuth } from '../hooks/useAuth';
-import { UserDTO } from '../api/authService';
+import { UserDto } from '../api/authService';
 import NavItem from './NavItem';
 
 interface NavItemConfig {
@@ -60,7 +60,7 @@ const navConfig: NavItemConfig[] = [
   },
 ];
 
-const hasPermission = (user: UserDTO | null, requiredRoles?: string[]): boolean => {
+const hasPermission = (user: UserDto | null, requiredRoles?: string[]): boolean => {
   if (!requiredRoles || requiredRoles.length === 0) {
     return true;
   }

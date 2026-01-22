@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchWithAuth } from './apiClient';
-import { SignUpRequest, UserDTO } from './authService';
+import { SignUpRequest, UserDto } from './authService';
 
 export interface Page<T> {
   content: T[];
@@ -42,38 +42,38 @@ export interface ResetPasswordRequest {
   confirmPassword?: string;
 }
 
-export const fetchUsers = async (pageable: { page: number; size: number }): Promise<Page<UserDTO>> => {
+export const fetchUsers = async (pageable: { page: number; size: number }): Promise<Page<UserDto>> => {
   const { page, size } = pageable;
   return fetchWithAuth(`/api/users?page=${page}&size=${size}`);
 };
 
 export const useUsers = (page: number, size: number) => {
-  return useQuery<Page<UserDTO>, Error>({
+  return useQuery<Page<UserDto>, Error>({
     queryKey: ['users', page, size],
     queryFn: () => fetchUsers({ page, size }),
   });
 };
 
-export const fetchUserById = async (id: number): Promise<UserDTO> => {
+export const fetchUserById = async (id: number): Promise<UserDto> => {
   return fetchWithAuth(`/api/users/${id}`);
 };
 
 export const useUserById = (id: number) => {
-  return useQuery<UserDTO, Error>({ queryKey: ['user', id], queryFn: () => fetchUserById(id) });
+  return useQuery<UserDto, Error>({ queryKey: ['user', id], queryFn: () => fetchUserById(id) });
 };
 
-export const fetchUserByUsername = async (username: string): Promise<UserDTO> => {
+export const fetchUserByUsername = async (username: string): Promise<UserDto> => {
   return fetchWithAuth(`/api/users/by-username?username=${username}`);
 };
 
 export const useUserByUsername = (username: string) => {
-  return useQuery<UserDTO, Error>({
+  return useQuery<UserDto, Error>({
     queryKey: ['user', username],
     queryFn: () => fetchUserByUsername(username),
   });
 };
 
-export const fetchUsersByIds = async (ids: number[]): Promise<UserDTO[]> => {
+export const fetchUsersByIds = async (ids: number[]): Promise<UserDto[]> => {
   return fetchWithAuth(`/api/users/by-ids`, {
     method: 'POST',
     body: JSON.stringify(ids),
@@ -81,10 +81,10 @@ export const fetchUsersByIds = async (ids: number[]): Promise<UserDTO[]> => {
 };
 
 export const useUsersByIds = (ids: number[]) => {
-  return useQuery<UserDTO[], Error>({ queryKey: ['users', ids], queryFn: () => fetchUsersByIds(ids) });
+  return useQuery<UserDto[], Error>({ queryKey: ['users', ids], queryFn: () => fetchUsersByIds(ids) });
 };
 
-export const createUser = async (newUser: SignUpRequest): Promise<UserDTO> => {
+export const createUser = async (newUser: SignUpRequest): Promise<UserDto> => {
   return fetchWithAuth(`/api/users`, {
     method: 'POST',
     body: JSON.stringify(newUser),
@@ -93,7 +93,7 @@ export const createUser = async (newUser: SignUpRequest): Promise<UserDTO> => {
 
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
-  return useMutation<UserDTO, Error, SignUpRequest>({
+  return useMutation<UserDto, Error, SignUpRequest>({
     mutationFn: createUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -101,7 +101,7 @@ export const useCreateUser = () => {
   });
 };
 
-export const updateUser = async (updatedUser: UserDTO): Promise<UserDTO> => {
+export const updateUser = async (updatedUser: UserDto): Promise<UserDto> => {
   return fetchWithAuth(`/api/users/${updatedUser.id}`, {
     method: 'PUT',
     body: JSON.stringify(updatedUser),
@@ -110,7 +110,7 @@ export const updateUser = async (updatedUser: UserDTO): Promise<UserDTO> => {
 
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
-  return useMutation<UserDTO, Error, UserDTO>({
+  return useMutation<UserDto, Error, UserDto>({
     mutationFn: updateUser,
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -136,7 +136,7 @@ export const useDeleteUser = () => {
   });
 };
 
-export const assignRolesToUser = async ({ userId, roles }: { userId: number; roles: string[] }): Promise<UserDTO> => {
+export const assignRolesToUser = async ({ userId, roles }: { userId: number; roles: string[] }): Promise<UserDto> => {
   return fetchWithAuth(`/api/users/${userId}/roles`, {
     method: 'POST',
     body: JSON.stringify(roles),
@@ -145,7 +145,7 @@ export const assignRolesToUser = async ({ userId, roles }: { userId: number; rol
 
 export const useAssignRolesToUser = () => {
   const queryClient = useQueryClient();
-  return useMutation<UserDTO, Error, { userId: number; roles: string[] }>({
+  return useMutation<UserDto, Error, { userId: number; roles: string[] }>({
     mutationFn: assignRolesToUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });

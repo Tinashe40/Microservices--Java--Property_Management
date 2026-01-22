@@ -1,9 +1,9 @@
 package com.proveritus.propertyservice.domain.model.property;
 
-import com.proveritus.cloudutility.dto.UserDTO;
+import com.tinash.cloud.utility.dto.UserDto;
 
 public record PropertyDTO(String id, String name, String managedBy) {
-    public PropertyDTO withManagerDetails(UserDTO user) {
+    public PropertyDTO withManagerDetails(UserDto user) {
         return new PropertyDTO(this.id, this.name, user.getUsername());
     }
 }

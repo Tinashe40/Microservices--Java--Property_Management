@@ -1,7 +1,7 @@
 package com.proveritus.propertyservice.property.domain;
 
-import com.proveritus.cloudutility.enums.PropertyType;
-import com.proveritus.cloudutility.jpa.BaseEntity;
+import com.tinash.cloud.utility.enums.PropertyType;
+import com.tinash.cloud.utility.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;

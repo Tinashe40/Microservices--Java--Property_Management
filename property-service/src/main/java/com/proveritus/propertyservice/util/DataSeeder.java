@@ -1,8 +1,8 @@
 package com.proveritus.propertyservice.util;
 
-import com.proveritus.cloudutility.enums.OccupancyStatus;
-import com.proveritus.cloudutility.enums.PropertyType;
-import com.proveritus.cloudutility.enums.RentType;
+import com.tinash.cloud.utility.enums.OccupancyStatus;
+import com.tinash.cloud.utility.enums.PropertyType;
+import com.tinash.cloud.utility.enums.RentType;
 import com.proveritus.propertyservice.floor.domain.Floor;
 import com.proveritus.propertyservice.floor.domain.FloorRepository;
 import com.proveritus.propertyservice.property.domain.Property;

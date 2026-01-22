@@ -1,6 +1,6 @@
 package com.proveritus.userservice.domain.repository;
 
-import com.proveritus.cloudutility.jpa.BaseDao;
+import com.tinash.cloud.utility.jpa.BaseDao;
 import com.proveritus.userservice.domain.model.permission.Permission;
 import org.springframework.stereotype.Repository;
 

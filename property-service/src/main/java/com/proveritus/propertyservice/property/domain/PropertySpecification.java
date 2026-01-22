@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.property.domain;
 
-import com.proveritus.cloudutility.enums.PropertyType;
+import com.tinash.cloud.utility.enums.PropertyType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 

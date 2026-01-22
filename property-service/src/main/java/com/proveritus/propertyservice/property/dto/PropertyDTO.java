@@ -1,9 +1,9 @@
 package com.proveritus.propertyservice.property.dto;
 
 import com.proveritus.propertyservice.floor.dto.FloorDTO;
-import com.proveritus.cloudutility.dto.UserDTO;
-import com.proveritus.cloudutility.enums.PropertyType;
-import com.proveritus.cloudutility.jpa.Updatable;
+import com.tinash.cloud.utility.dto.UserDto;
+import com.tinash.cloud.utility.enums.PropertyType;
+import com.tinash.cloud.utility.jpa.Updatable;
 import com.proveritus.propertyservice.unit.dto.UnitDTO;
 import lombok.*;
 
@@ -23,7 +23,7 @@ public class PropertyDTO implements Updatable {
     private Integer numberOfFloors;
     private Integer numberOfUnits;
     private String managedBy;
-    private UserDTO managedByDetails;
+    private UserDto managedByDetails;
     private List<FloorDTO> floors;
     private List<UnitDTO> units;
 }

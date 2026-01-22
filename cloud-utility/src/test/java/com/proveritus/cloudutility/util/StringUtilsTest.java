@@ -1,6 +1,6 @@
 package com.proveritus.cloudutility.util;
 
-import com.proveritus.cloudutility.util.string.StringUtils;
+import com.tinash.cloud.utility.util.string.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

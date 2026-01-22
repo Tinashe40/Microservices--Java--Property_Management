@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.application.port.out;
 
-import com.proveritus.cloudutility.core.domain.DomainEvent;
+import com.tinash.cloud.utility.core.domain.DomainEvent;
 
 /**
  * Port for publishing domain events.

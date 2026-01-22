@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.infrastructure.client;
 
-import com.proveritus.cloudutility.dto.UserDTO;
+import com.tinash.cloud.utility.dto.UserDto;
 import com.proveritus.propertyservice.application.port.out.UserServicePort;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -26,7 +26,7 @@ public class UserServiceAdapter implements UserServicePort {
     @Override 
     @CircuitBreaker(name = "user-service", fallbackMethod = "findUserByIdFallback")
     @Retry(name = "user-service")
-    public Optional<UserDTO> findUserById(String userId) {
+    public Optional<UserDto> findUserById(String userId) {
         try {
             return Optional.ofNullable(client.getUserById(userId));
         } catch (Exception e) {
@@ -38,7 +38,7 @@ public class UserServiceAdapter implements UserServicePort {
     @Override 
     @CircuitBreaker(name = "user-service", fallbackMethod = "findUsersByIdsFallback")
     @Retry(name = "user-service")
-    public List<UserDTO> findUsersByIds(List<String> userIds) {
+    public List<UserDto> findUsersByIds(List<String> userIds) {
         try {
             return client.getUsersByIds(userIds);
         } catch (Exception e) {
@@ -48,12 +48,12 @@ public class UserServiceAdapter implements UserServicePort {
     }
 
     // Fallback methods
-    private Optional<UserDTO> findUserByIdFallback(String userId, Exception e) {
+    private Optional<UserDto> findUserByIdFallback(String userId, Exception e) {
         log.warn("Fallback for user {}: {}", userId, e.getMessage());
         return Optional.empty();
     }
 
-    private List<UserDTO> findUsersByIdsFallback(List<String> userIds, Exception e) {
+    private List<UserDto> findUsersByIdsFallback(List<String> userIds, Exception e) {
         log.warn("Fallback for users: {}", e.getMessage());
         return List.of();
     }

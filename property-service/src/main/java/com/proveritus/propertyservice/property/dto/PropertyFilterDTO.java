@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.property.dto;
 
-import com.proveritus.cloudutility.enums.PropertyType;
+import com.tinash.cloud.utility.enums.PropertyType;
 import lombok.Getter;
 import lombok.Setter;
 

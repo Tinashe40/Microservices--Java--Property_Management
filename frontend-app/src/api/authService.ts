@@ -3,7 +3,7 @@ import { fetchWithAuth } from './apiClient';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-export interface UserDTO {
+export interface UserDto {
     id: number;
     username: string;
     email: string;
@@ -24,7 +24,7 @@ export interface JwtAuthResponse {
 
 export interface LoginResponse {
     token: JwtAuthResponse;
-    user: UserDTO;
+    user: UserDto;
 }
 
 export interface SignUpRequest {
@@ -53,7 +53,7 @@ export const useSignIn = () => {
     return useMutation({ mutationFn: signIn });
 };
 
-export const signUp = async (signUpRequest: SignUpRequest): Promise<UserDTO> => {
+export const signUp = async (signUpRequest: SignUpRequest): Promise<UserDto> => {
     return fetchWithAuth('/api/auth/signup', {
         method: 'POST',
         body: JSON.stringify(signUpRequest),
@@ -64,12 +64,12 @@ export const useSignUp = () => {
     return useMutation({ mutationFn: signUp });
 };
 
-export const fetchCurrentUser = async (): Promise<UserDTO> => {
+export const fetchCurrentUser = async (): Promise<UserDto> => {
     return fetchWithAuth('/api/auth/me');
 };
 
 export const useCurrentUser = () => {
-    return useQuery<UserDTO, Error>({
+    return useQuery<UserDto, Error>({
         queryKey: ['currentUser'],
         queryFn: fetchCurrentUser,
     });

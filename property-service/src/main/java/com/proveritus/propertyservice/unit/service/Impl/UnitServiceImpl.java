@@ -1,12 +1,12 @@
 package com.proveritus.propertyservice.unit.service.Impl;
 
-import com.proveritus.cloudutility.audit.annotation.Auditable;
+import com.tinash.cloud.utility.audit.annotation.Auditable;
 
-import com.proveritus.cloudutility.enums.OccupancyStatus;
-import com.proveritus.cloudutility.enums.RentType;
-import com.proveritus.cloudutility.exception.ResourceNotFoundException;
-import com.proveritus.cloudutility.jpa.DomainServiceImpl;
-import com.proveritus.cloudutility.security.Permissions;
+import com.tinash.cloud.utility.enums.OccupancyStatus;
+import com.tinash.cloud.utility.enums.RentType;
+import com.tinash.cloud.utility.exception.ResourceNotFoundException;
+import com.tinash.cloud.utility.jpa.DomainServiceImpl;
+import com.tinash.cloud.utility.security.Permissions;
 import com.proveritus.propertyservice.floor.domain.Floor;
 import com.proveritus.propertyservice.floor.domain.FloorRepository;
 import com.proveritus.propertyservice.floor.service.FloorService;

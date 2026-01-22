@@ -1,6 +1,6 @@
 package com.proveritus.userservice.domain.model.user;
 
-import com.proveritus.cloudutility.core.domain.ValueObject;
+import com.tinash.cloud.utility.core.domain.ValueObject;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;

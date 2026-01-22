@@ -1,6 +1,6 @@
 package com.proveritus.userservice.domain.model.user;
 
-import com.proveritus.cloudutility.jpa.BaseEntity;
+import com.tinash.cloud.utility.jpa.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
