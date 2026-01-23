@@ -9,11 +9,9 @@ import java.util.List;
 public class PasswordHistoryService {
 
     private final List<String> passwordHistory = new ArrayList<>();
-
     public void addPasswordToHistory(String password) {
         passwordHistory.add(password);
     }
-
     public boolean isPasswordInHistory(String password) {
         return passwordHistory.contains(password);
     }

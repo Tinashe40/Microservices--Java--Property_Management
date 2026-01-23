@@ -1,4 +1,4 @@
-package com.proveritus.cloudutility.validation;
+package com.tinash.cloud.utility.validation;
 
 import com.tinash.cloud.utility.exception.business.ValidationException;
 

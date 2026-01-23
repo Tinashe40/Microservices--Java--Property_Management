@@ -6,16 +6,14 @@ import org.springframework.stereotype.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.tinash.cloud.utility.security.password.PasswordValidator.PASSWORD_PATTERN;
+
 /**
  * Validates a password against a set of predefined policies.
  * This ensures strong and secure passwords are used within the application.
  */
 @Component
 public class PasswordPolicyValidator {
-
-    // Minimum 8 characters, at least one uppercase letter, one lowercase letter, one digit, one special character.
-    private static final String PASSWORD_PATTERN =
-            "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\[\]{};':\\"\\|,.<>/?]).{8,}$";
 
     private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
 
