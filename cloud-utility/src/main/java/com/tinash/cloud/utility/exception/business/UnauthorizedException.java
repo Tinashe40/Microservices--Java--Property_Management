@@ -1,0 +1,18 @@
+package com.tinash.cloud.utility.exception.business;
+
+import com.tinash.cloud.utility.exception.base.BusinessException;
+
+/**
+ * Exception thrown when user is not authenticated.
+ */
+public class UnauthorizedException extends BusinessException {
+    
+    public UnauthorizedException(String message) {
+        super(message, "UNAUTHORIZED");
+    }
+    
+    @Override
+    public int getHttpStatus() {
+        return 401;
+    }
+}

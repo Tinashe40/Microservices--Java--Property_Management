@@ -1,94 +1,87 @@
 package com.tinash.cloud.utility.exception;
 
+import com.tinash.cloud.utility.exception.business.ResourceNotFoundException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.dao.DataIntegrityViolationException;
 
-import java.util.Objects;
 
-/**
- * Global Exception Handler for consistent error responses across all controllers.
- * This class uses @RestControllerAdvice to intercept exceptions and return
- * structured ErrorResponse objects, improving API reliability and user experience.
- */
-@RestControllerAdvice
-public class GlobalExceptionHandler {
+import java.time.LocalDateTime;
 
-    /**
-     * Handles ResourceNotFoundException, returning a 404 Not Found status.
-     *
-     * @param ex The ResourceNotFoundException instance.
-     * @param request The WebRequest.
-     * @return A ResponseEntity containing the ErrorResponse.
-     */
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@ControllerAdvice
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        String error = "Malformed JSON request";
+        return buildResponseEntity(new ApiError(HttpStatus.BAD_REQUEST, error, ex));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
+        apiError.setMessage("Validation error");
+        apiError.addValidationErrors(ex.getBindingResult().getFieldErrors());
+        apiError.addValidationError(ex.getBindingResult().getGlobalErrors());
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    protected ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String message = "Database error: " + ex.getMostSpecificCause().getMessage();
+        return buildResponseEntity(new ApiError(HttpStatus.CONFLICT, message, ex));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    protected ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex) {
+        return buildResponseEntity(new ApiError(HttpStatus.FORBIDDEN, ex.getMessage(), ex));
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.NOT_FOUND,
-                ex.getMessage(),
-                ((ServletWebRequest) request).getRequest().getRequestURI()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    protected ResponseEntity<Object> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        return buildResponseEntity(new ApiError(HttpStatus.NOT_FOUND, ex.getMessage(), ex));
     }
 
-    /**
-     * Handles InternalServerErrorException, returning a 500 Internal Server Error status.
-     *
-     * @param ex The InternalServerErrorException instance.
-     * @param request The WebRequest.
-     * @return A ResponseEntity containing the ErrorResponse.
-     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    protected ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return buildResponseEntity(new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage(), ex));
+    }
+
     @ExceptionHandler(InternalServerErrorException.class)
-    public ResponseEntity<ErrorResponse> handleInternalServerErrorException(InternalServerErrorException ex, WebRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                ex.getMessage(),
-                ((ServletWebRequest) request).getRequest().getRequestURI()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Object> handleInternalServerErrorException(InternalServerErrorException ex, WebRequest request) {
+        return buildResponseEntity(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), ex));
     }
 
-    /**
-     * Handles MethodArgumentNotValidException (e.g., @Valid DTO validation failures),
-     * returning a 400 Bad Request status.
-     *
-     * @param ex The MethodArgumentNotValidException instance.
-     * @param request The WebRequest.
-     * @return A ResponseEntity containing the ErrorResponse.
-     */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, WebRequest request) {
-        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
-                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
-                .findFirst()
-                .orElse(Objects.requireNonNull(ex.getFieldError()).getDefaultMessage());
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
-                errorMessage,
-                ((ServletWebRequest) request).getRequest().getRequestURI()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<Object> handleTooManyRequestsException(TooManyRequestsException ex, WebRequest request) {
+        return buildResponseEntity(new ApiError(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), ex));
     }
 
-    /**
-     * Handles all other unhandled exceptions, returning a generic 500 Internal Server Error.
-     *
-     * @param ex The Exception instance.
-     * @param request The WebRequest.
-     * @return A ResponseEntity containing the ErrorResponse.
-     */
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred: " + ex.getMessage(),
-                ((ServletWebRequest) request).getRequest().getRequestURI()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    protected ResponseEntity<Object> handleAllOtherExceptions(Exception ex) {
+        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", ex);
+        return buildResponseEntity(apiError);
     }
+
+    private ResponseEntity<Object> buildResponseEntity(ApiError apiError) {
+        return new ResponseEntity<>(apiError, apiError.getStatus());
+    }
+
 }

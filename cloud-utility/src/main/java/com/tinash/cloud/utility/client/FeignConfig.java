@@ -51,11 +51,9 @@ public class FeignConfig {
      * This can be used to propagate security context (JWT token) across service calls.
      * Uncomment and implement if cross-service authentication is needed.
      */
-    /*
     @Bean
     public RequestInterceptor requestInterceptor() {
         return requestTemplate -> {
-            // Example: Propagate Authorization header
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes != null) {
                 HttpServletRequest httpRequest = attributes.getRequest();
@@ -66,5 +64,5 @@ public class FeignConfig {
             }
         };
     }
-    */
+
 }
