@@ -22,7 +22,7 @@ public class JwtTokenBlacklist {
     }
 
     public void blacklist(String token) {
-        blacklist(token, 86400000); // Default 24 hours
+        blacklist(token, 86400000);
     }
 
     public boolean isBlacklisted(String token) {

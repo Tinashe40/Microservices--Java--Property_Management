@@ -1,6 +1,7 @@
 package com.tinash.cloud.utility.jpa;
 
-import com.tinash.cloud.utility.exception.business.ResourceNotFoundException;
+import com.tinash.cloud.utility.dto.response.PagedResponse;
+import com.tinash.cloud.utility.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,13 +66,25 @@ public abstract class BaseService<T, ID> {
 
     /**
      * Update existing entity.
+     * Subclasses should implement `applyUpdates` to define how the new entity's properties
+     * are merged into the existing entity.
      */
     @Transactional
-    public T update(ID id, T entity) {
+    public T update(ID id, T updateEntity) {
         T existing = findById(id);
-        // Entity specific update logic should be in child class
-        return getRepository().save(entity);
+        T updated = applyUpdates(existing, updateEntity);
+        return getRepository().save(updated);
     }
+
+    /**
+     * Abstract method to be implemented by subclasses to apply updates from the
+     * `updateEntity` to the `existingEntity`.
+     *
+     * @param existingEntity The entity retrieved from the database.
+     * @param updateEntity   The entity containing the updated values.
+     * @return The existing entity with applied updates.
+     */
+    protected abstract T applyUpdates(T existingEntity, T updateEntity);
 
     /**
      * Soft delete entity.

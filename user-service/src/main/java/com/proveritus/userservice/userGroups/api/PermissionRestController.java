@@ -1,6 +1,5 @@
 package com.proveritus.userservice.userGroups.api;
 
-import com.tinash.cloud.utility.security.Permissions;
 import com.proveritus.userservice.userGroups.dto.PermissionDTO;
 import com.proveritus.userservice.userGroups.service.PermissionService;
 import io.swagger.v3.oas.annotations.tags.Tag;

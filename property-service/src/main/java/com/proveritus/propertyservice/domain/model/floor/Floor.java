@@ -1,6 +1,6 @@
 package com.proveritus.propertyservice.domain.model.floor;
 
-import com.tinash.cloud.utility.jpa.entity;
+import com.tinash.cloud.utility.jpa.BaseEntity;
 import com.proveritus.propertyservice.domain.model.property.Property;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
@@ -12,7 +12,7 @@ import lombok.Setter;
 @Table(name = "floors")
 @Getter
 @Setter
-public class Floor extends BaseEntity extends SoftDeletableEntity extends AuditableEntity {
+public class Floor extends BaseEntity extends SoftDeletableEntity, AuditableEntity {
 
 
     @ManyToOne

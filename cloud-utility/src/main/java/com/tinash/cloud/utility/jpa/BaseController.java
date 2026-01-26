@@ -1,5 +1,6 @@
 package com.tinash.cloud.utility.jpa;
 
+import com.tinash.cloud.utility.dto.response.ApiResponse;
 import com.tinash.cloud.utility.dto.response.PagedResponse;
 import com.tinash.cloud.utility.mapper.BaseMapper;
 import jakarta.validation.Valid;

@@ -1,7 +1,9 @@
 package com.tinash.cloud.utility.dto.response;
 
 import lombok.Data;
-import lombok.*;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
 

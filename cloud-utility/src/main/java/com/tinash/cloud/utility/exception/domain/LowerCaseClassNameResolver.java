@@ -1,4 +1,4 @@
-package com.tinash.cloud.utility.exception;
+package com.tinash.cloud.utility.exception.domain;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;

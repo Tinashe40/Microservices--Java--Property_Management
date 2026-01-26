@@ -1,6 +1,7 @@
 package com.proveritus.propertyservice.client;
 
-import com.tinash.cloud.utility.dto.UserDto;
+
+import com.tinash.cloud.utility.dto.common.UserDto;
 import com.tinash.cloud.utility.security.RemoteUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

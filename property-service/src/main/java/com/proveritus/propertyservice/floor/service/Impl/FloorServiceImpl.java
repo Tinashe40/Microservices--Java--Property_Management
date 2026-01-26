@@ -4,7 +4,7 @@ import com.tinash.cloud.utility.audit.annotation.Auditable;
 import com.tinash.cloud.utility.enums.OccupancyStatus;
 import com.tinash.cloud.utility.exception.ResourceNotFoundException;
 import com.tinash.cloud.utility.jpa.DomainServiceImpl;
-import com.tinash.cloud.utility.security.Permissions;
+import com.tinash.cloud.utility.security.permission.Permissions;
 import com.proveritus.propertyservice.floor.domain.Floor;
 import com.proveritus.propertyservice.floor.domain.FloorRepository;
 import com.proveritus.propertyservice.floor.domain.FloorValidator;

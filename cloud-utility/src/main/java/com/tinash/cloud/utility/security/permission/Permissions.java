@@ -1,4 +1,4 @@
-package com.tinash.cloud.utility.security;
+package com.tinash.cloud.utility.security.permission;
 
 public final class Permissions {
     private Permissions() {

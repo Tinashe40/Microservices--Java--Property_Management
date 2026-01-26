@@ -1,7 +1,7 @@
 package com.tinash.cloud.utility.client;
 
-import com.tinash.cloud.utility.exception.InternalServerErrorException;
-import com.tinash.cloud.utility.exception.ResourceNotFoundException;
+import com.tinash.cloud.utility.exception.base.InternalServerErrorException;
+import com.tinash.cloud.utility.exception.business.ResourceNotFoundException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import org.springframework.http.HttpStatus;

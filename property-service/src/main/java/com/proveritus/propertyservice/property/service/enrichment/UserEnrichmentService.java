@@ -3,6 +3,7 @@ package com.proveritus.propertyservice.property.service.enrichment;
 import com.proveritus.propertyservice.client.UserClient;
 import com.proveritus.propertyservice.property.domain.Property;
 import com.proveritus.propertyservice.property.dto.PropertyDTO;
+import com.tinash.cloud.utility.dto.common.UserDto;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

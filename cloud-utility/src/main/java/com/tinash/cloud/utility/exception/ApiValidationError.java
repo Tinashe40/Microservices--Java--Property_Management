@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode
 @AllArgsConstructor
-public class ApiValidationError implements ApiSubError {
+public class ApiValidationError implements ApiError.ApiSubError {
     private String object;
     private String field;
     private Object rejectedValue;

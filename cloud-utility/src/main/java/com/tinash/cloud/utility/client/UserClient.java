@@ -18,8 +18,8 @@ public interface UserClient {
     @GetMapping("/api/users/me")
     Optional<UserDto> getCurrentUser(); // Changed to return Optional
 
-    @GetMapping("/api/v1/users/{id}") // Kept tinash's path, changed variable name for consistency
-    Optional<UserDto> getUserById(@PathVariable("id") Long id); // Changed to return Optional
+    @GetMapping("/api/v1/users/{id}")
+    Optional<UserDto> getUserById(@PathVariable("id") Long id);
 
     @GetMapping("/api/users")
     List<UserDto> getAllUsers(); // Changed to use UserDto

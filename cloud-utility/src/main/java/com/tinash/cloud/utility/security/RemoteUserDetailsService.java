@@ -1,6 +1,7 @@
 package com.tinash.cloud.utility.security;
 
-import com.tinash.cloud.utility.dto.UserDto;
+import com.tinash.cloud.utility.dto.common.UserDto;
+import com.tinash.cloud.utility.security.model.CustomPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,10 +13,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Abstract service for loading user details from a remote source.
+ * Microservices should extend this and implement getUserByUsername()
+ * to fetch user data from their own data source.
+ */
 @Service
 @RequiredArgsConstructor
 public abstract class RemoteUserDetailsService implements UserDetailsService {
 
+    /**
+     * Fetch user data from the implementing microservice's data source.
+     *
+     * @param username the username to look up
+     * @return UserDto containing user information
+     */
     public abstract UserDto getUserByUsername(String username);
 
     @Override
@@ -34,8 +46,18 @@ public abstract class RemoteUserDetailsService implements UserDetailsService {
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
+        Long userId = null;
+        if (user.getId() != null) {
+            try {
+                userId = Long.parseLong(user.getId());
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(
+                        "User ID must be a valid Long value, got: " + user.getId(), e);
+            }
+        }
+
         return new CustomPrincipal(
-                user.getId(),
+                userId,
                 user.getUsername(),
                 user.getEmail(),
                 "",

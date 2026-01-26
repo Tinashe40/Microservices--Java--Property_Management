@@ -1,8 +1,6 @@
 package com.tinash.cloud.utility.exception;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
-import jakarta.validation.ConstraintViolation;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -11,19 +9,21 @@ import org.springframework.validation.ObjectError;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
+/**
+ * Standard API error response structure.
+ * Used for returning detailed error information to clients.
+ */
 @Data
-@JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.CUSTOM, property = "error", visible = true)
-@JsonTypeIdResolver(LowerCaseClassNameResolver.class)
 public class ApiError {
 
     private HttpStatus status;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime timestamp;
+
     private String message;
     private String debugMessage;
-
-    private final LocalDateTime timestamp;
-
     private List<ApiSubError> subErrors;
 
     private ApiError() {
@@ -49,56 +49,61 @@ public class ApiError {
         this.debugMessage = ex.getLocalizedMessage();
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    private void addSubError(ApiSubError subError) {
+    // Make this method public so it can be used from GlobalExceptionHandler
+    public void addSubError(ApiSubError subError) {
         if (subErrors == null) {
             subErrors = new ArrayList<>();
         }
         subErrors.add(subError);
     }
 
-    private void addValidationError(String object, String field, Object rejectedValue, String message) {
-        addSubError(new ApiValidationError(object, field, rejectedValue, message));
-    }
-
-    private void addValidationError(String object, String message) {
-        addSubError(new ApiValidationError(object, message));
-    }
-
-    private void addValidationError(FieldError fieldError) {
-        this.addValidationError(
-                fieldError.getObjectName(),
-                fieldError.getField(),
-                fieldError.getRejectedValue(),
-                fieldError.getDefaultMessage());
-    }
-
+    // Helper methods for validation errors
     public void addValidationErrors(List<FieldError> fieldErrors) {
-        fieldErrors.forEach(this::addValidationError);
-    }
-
-    private void addValidationError(ObjectError objectError) {
-        this.addValidationError(
-                objectError.getObjectName(),
-                objectError.getDefaultMessage());
+        fieldErrors.forEach(fieldError ->
+                addSubError(new ApiValidationError(
+                        fieldError.getObjectName(),
+                        fieldError.getField(),
+                        fieldError.getRejectedValue(),
+                        fieldError.getDefaultMessage()
+                ))
+        );
     }
 
     public void addValidationError(List<ObjectError> globalErrors) {
-        globalErrors.forEach(this::addValidationError);
+        globalErrors.forEach(globalError ->
+                addSubError(new ApiValidationError(
+                        globalError.getObjectName(),
+                        globalError.getDefaultMessage()
+                ))
+        );
     }
 
-    private void addValidationError(ConstraintViolation<?> cv) {
-        this.addValidationError(
-                cv.getRootBeanClass().getSimpleName(),
-                cv.getPropertyPath().toString(),
-                cv.getInvalidValue(),
-                cv.getMessage());
+    /**
+     * Base interface for all sub-errors.
+     */
+    public interface ApiSubError {
     }
 
-    public void addValidationErrors(Set<ConstraintViolation<?>> constraintViolations) {
-        constraintViolations.forEach(this::addValidationError);
+    /**
+     * Sub-error for validation errors.
+     */
+    @Data
+    public static class ApiValidationError implements ApiSubError {
+        private String object;
+        private String field;
+        private Object rejectedValue;
+        private String message;
+
+        public ApiValidationError(String object, String message) {
+            this.object = object;
+            this.message = message;
+        }
+
+        public ApiValidationError(String object, String field, Object rejectedValue, String message) {
+            this.object = object;
+            this.field = field;
+            this.rejectedValue = rejectedValue;
+            this.message = message;
+        }
     }
 }

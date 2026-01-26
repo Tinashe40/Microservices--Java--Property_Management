@@ -15,7 +15,6 @@ import lombok.Setter;
 public abstract class BaseEntity extends Auditable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     @Column(name = "is_deleted")

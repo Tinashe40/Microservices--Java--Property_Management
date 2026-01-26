@@ -8,3 +8,4 @@ app:
       expiration: 86400000
       issuer: CloudUtility
       secret:
+      refreshExpiration: 604800000

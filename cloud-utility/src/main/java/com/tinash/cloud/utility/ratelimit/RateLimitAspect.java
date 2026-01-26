@@ -43,25 +43,24 @@ public class RateLimitAspect {
 
         String key = resolveRateLimitKey(rateLimited.key(), joinPoint);
 
-        // Get the bucket for the resolved key
-        Bucket bucket = bucketManager.getBucket(
+        // Get the bucket for the resolved key - FIXED: use resolveBucket method
+        Bucket bucket = bucketManager.resolveBucket(
                 key,
                 rateLimited.capacity(),
-                rateLimited.capacity(), // Refill tokens equal to capacity for simplicity, or define separate refill rate
+                rateLimited.capacity(), // Refill tokens equal to capacity
                 Duration.of(rateLimited.period(), rateLimited.unit().toChronoUnit())
         );
 
         ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
         if (probe.isConsumed()) {
-            // Add headers for remaining tokens and retry-after if needed
-            // For example:
-            // HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
-            // response.addHeader("X-Rate-Limit-Remaining", String.valueOf(probe.getRemainingTokens()));
             return joinPoint.proceed();
         } else {
-            // Calculate retry-after seconds
+            // Calculate retry-after seconds - FIXED: pass as constructor parameter
             long waitForRefill = probe.getNanosToWaitForRefill() / 1_000_000_000;
-            throw new TooManyRequestsException(rateLimited.errorMessage(), waitForRefill);
+            throw new TooManyRequestsException(
+                    rateLimited.errorMessage(),
+                    Duration.ofSeconds(waitForRefill)
+            );
         }
     }
 

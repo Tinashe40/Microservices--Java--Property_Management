@@ -1,6 +1,6 @@
 package com.proveritus.userservice.config;
 
-import com.tinash.cloud.utility.security.Permissions;
+import com.tinash.cloud.utility.security.permission.Permissions;
 import com.proveritus.userservice.auth.domain.User;
 import com.proveritus.userservice.userManager.domain.UserRepository;
 import com.proveritus.userservice.userGroups.domain.*;

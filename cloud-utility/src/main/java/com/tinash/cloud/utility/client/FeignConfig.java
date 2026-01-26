@@ -1,11 +1,16 @@
 package com.tinash.cloud.utility.client;
 
+import org.springframework.beans.factory.annotation.Value;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.Retryer;
 import feign.codec.ErrorDecoder;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * Global Feign configuration.
@@ -14,6 +19,9 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class FeignConfig {
+
+    @Value("${feign.client.config.default.loggerLevel:full}") // Inject property with default
+    private String feignLoggerLevel;
 
     /**
      * Provides a custom ErrorDecoder to handle specific HTTP error codes
@@ -31,7 +39,7 @@ public class FeignConfig {
      */
     @Bean
     Logger.Level feignLoggerLevel() {
-        return Logger.Level.FULL;
+        return Logger.Level.valueOf(feignLoggerLevel.toUpperCase()); // Use injected property
     }
 
     /**
