@@ -46,18 +46,8 @@ public abstract class RemoteUserDetailsService implements UserDetailsService {
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
-        Long userId = null;
-        if (user.getId() != null) {
-            try {
-                userId = Long.parseLong(user.getId());
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(
-                        "User ID must be a valid Long value, got: " + user.getId(), e);
-            }
-        }
-
         return new CustomPrincipal(
-                userId,
+                user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 "",

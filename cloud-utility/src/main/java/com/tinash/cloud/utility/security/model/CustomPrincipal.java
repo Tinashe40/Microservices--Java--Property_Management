@@ -13,10 +13,10 @@ import java.util.Collection;
 @Getter
 public class CustomPrincipal extends User {
 
-    private final Long id;
+    private final String id;
     private final String email;
 
-    public CustomPrincipal(Long id,
+    public CustomPrincipal(String id,
                            String username,
                            String email,
                            String password,

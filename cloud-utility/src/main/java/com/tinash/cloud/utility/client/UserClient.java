@@ -1,6 +1,7 @@
 package com.tinash.cloud.utility.client;
 
 import com.tinash.cloud.utility.dto.common.UserDto; // Assuming this will be the canonical DTO
+import lombok.extern.slf4j.Slf4j; // Import Slf4j
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
@@ -36,36 +37,37 @@ public interface UserClient {
      * experiences an error, preventing cascade failures.
      */
     @Component
+    @Slf4j // Add Slf4j annotation
     class UserClientFallback implements UserClient {
 
         @Override
         public Optional<UserDto> getCurrentUser() {
-            System.err.println("Fallback activated for getCurrentUser: User service is down or experienced an error.");
+            log.error("Fallback activated for getCurrentUser: User service is down or experienced an error."); // Use log.error
             return Optional.empty();
         }
 
         @Override
         public Optional<UserDto> getUserById(Long id) {
-            System.err.println("Fallback activated for getUserById: User service is down or experienced an error for ID: " + id);
+            log.error("Fallback activated for getUserById: User service is down or experienced an error for ID: {}", id); // Use log.error
             return Optional.empty();
         }
 
         @Override
         public List<UserDto> getAllUsers() {
-            System.err.println("Fallback activated for getAllUsers: User service is down or experienced an error.");
+            log.error("Fallback activated for getAllUsers: User service is down or experienced an error."); // Use log.error
             return List.of(); // Return empty list on fallback
         }
 
         @Override
         public UserDto updateUser(UserDto userDto) {
-            System.err.println("Fallback activated for updateUser: User service is down or experienced an error for user: " + userDto.getId());
+            log.error("Fallback activated for updateUser: User service is down or experienced an error for user: {}", userDto.getId()); // Use log.error
             // Depending on the use case, you might return a default UserDto or throw a specific exception
             return new UserDto(); // Return a default/empty DTO
         }
 
         @Override
         public void expirePassword(Long userId) {
-            System.err.println("Fallback activated for expirePassword: User service is down or experienced an error for user ID: " + userId);
+            log.error("Fallback activated for expirePassword: User service is down or experienced an error for user ID: {}", userId); // Use log.error
             // No return value, just log the error
         }
     }

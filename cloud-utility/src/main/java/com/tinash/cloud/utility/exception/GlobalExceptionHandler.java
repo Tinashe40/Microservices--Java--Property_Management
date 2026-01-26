@@ -1,6 +1,7 @@
 package com.tinash.cloud.utility.exception;
 
 import com.tinash.cloud.utility.exception.base.InternalServerErrorException;
+import com.tinash.cloud.utility.exception.technical.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
