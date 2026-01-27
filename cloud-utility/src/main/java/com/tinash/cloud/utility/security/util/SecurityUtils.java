@@ -81,7 +81,11 @@ public final class SecurityUtils {
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof CustomPrincipal) {
-            return Optional.ofNullable(((CustomPrincipal) principal).getId());
+            try {
+                return Optional.ofNullable(Long.valueOf(((CustomPrincipal) principal).getId()));
+            } catch (NumberFormatException e) {
+                return Optional.empty();
+            }
         }
 
         return Optional.empty();

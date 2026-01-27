@@ -4,12 +4,12 @@ import com.tinash.cloud.utility.util.file.config.FileUploadProperties;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Objects;
 import java.util.UUID;
 
 public final class FileUploadUtils {
@@ -26,7 +26,7 @@ public final class FileUploadUtils {
      * @param multipartFile The file to save.
      * @param properties FileUploadProperties for validation and configuration.
      * @return The securely generated unique filename (including extension).
-     * @throws FileUploadException if the file is empty, exceeds size limits, has an disallowed type, or an I/O error occurs.
+     * @throws FileUploadException if the file is empty, exceeds size limits, has a disallowed type, or an I/O error occurs.
      */
     public static String saveFile(String uploadDir, String fileName, MultipartFile multipartFile, FileUploadProperties properties) {
         if (multipartFile.isEmpty()) {

@@ -1,6 +1,5 @@
 package com.tinash.cloud.utility.validation.annotation;
 
-import com.tinash.cloud.utility.password.PasswordPolicy;
 import com.tinash.cloud.utility.password.PasswordPolicyValidator;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

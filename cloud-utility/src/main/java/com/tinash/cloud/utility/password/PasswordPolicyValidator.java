@@ -1,5 +1,6 @@
 package com.tinash.cloud.utility.password;
 
+import com.tinash.cloud.utility.security.password.PasswordPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ public class PasswordPolicyValidator {
             if (passwordPolicy.isRequireSpecial()) {
                 regexBuilder.append("(?=.*[@#$%^&+=])");
             }
-            regexBuilder.append("(?=\\S+$)"); // no whitespace
+            regexBuilder.append("(?=\\S+$)");
             regexBuilder.append(".{")
                     .append(passwordPolicy.getMinLength())
                     .append(",")
