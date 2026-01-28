@@ -1,6 +1,6 @@
 package com.proveritus.userservice.jwt;
 
-import com.proveritus.userservice.auth.domain.User;
+import com.proveritus.userservice.domain.model.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

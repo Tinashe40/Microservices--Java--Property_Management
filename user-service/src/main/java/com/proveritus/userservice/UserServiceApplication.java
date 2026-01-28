@@ -30,11 +30,10 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 )
 @ComponentScan(basePackages = {"com.proveritus.userservice", "com.proveritus.cloudutility"})
 @EnableJpaRepositories(basePackages = {
-    "com.proveritus.userservice.userManager.domain",
-    "com.proveritus.userservice.userGroups.domain",
+    "com.proveritus.userservice.domain.repository",
     "com.proveritus.userservice.jwt",
     "com.proveritus.cloudutility.audit.repository",
-    "com.proveritus.userservice.passwordManager.domain.repo"
+    "com.proveritus.userservice.domain.repository"
 })
 @EntityScan(basePackages = {"com.proveritus.userservice", "com.proveritus.cloudutility"})
 public class UserServiceApplication {

@@ -1,4 +1,4 @@
-package com.tinash.cloud.utility.jpa.id;
+package com.proveritus.userservice.shared.domain.id;
 
 /**
  * Core interface for ID generation

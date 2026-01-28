@@ -3,35 +3,30 @@ package com.proveritus.userservice.domain.model.user;
 import com.tinash.cloud.utility.core.domain.ValueObject;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Instant;
 import java.util.Objects;
 
 /**
  * Password value object.
  * Encapsulates password hashing and validation.
  */
-
 @Embeddable
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Password implements ValueObject {
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "hashed_value", nullable = false)
     private String hashedValue;
 
-    @Column(name = "password_last_changed")
-    private java.time.Instant lastChanged;
+    @Column(name = "last_changed", nullable = false)
+    private Instant lastChanged;
 
-    protected Password() {
-    }
-
-    private Password(String hashedValue) {
+    private Password(String hashedValue, Instant lastChanged) {
         this.hashedValue = hashedValue;
-        this.lastChanged = java.time.Instant.now();
+        this.lastChanged = lastChanged;
     }
 
     /**
@@ -41,32 +36,28 @@ public class Password implements ValueObject {
         if (plainText == null || plainText.isEmpty()) {
             throw new IllegalArgumentException("Password cannot be null or empty");
         }
-        return new Password(encoder.encode(plainText));
+        return new Password(encoder.encode(plainText), Instant.now());
     }
 
     /**
      * Creates password from already hashed value (for loading from DB).
      */
-    public static Password fromHashedValue(String hashedValue) {
-        return new Password(hashedValue);
+    public static Password fromHashedValue(String hashedValue, Instant lastChanged) {
+        return new Password(hashedValue, lastChanged);
     }
 
     /**
-     * Checks if the given password matches this one.
+     * Checks if the given password matches the provided raw password using the encoder.
      */
-    public boolean matches(Password other, PasswordEncoder encoder) {
-        return encoder.matches(other.hashedValue, this.hashedValue);
-    }
-
-    public boolean matches(Password other) {
-        return Objects.equals(this.hashedValue, other.hashedValue);
+    public boolean matches(String rawPassword, PasswordEncoder encoder) {
+        return encoder.matches(rawPassword, this.hashedValue);
     }
 
     public String getHashedValue() {
         return hashedValue;
     }
 
-    public java.time.Instant getLastChanged() {
+    public Instant getLastChanged() {
         return lastChanged;
     }
 

@@ -1,7 +1,7 @@
 package com.proveritus.userservice.userGroups.mapper;
 
 
-import com.proveritus.userservice.userGroups.domain.Permission;
+import com.proveritus.userservice.domain.model.permission.Permission;
 import com.proveritus.userservice.userGroups.dto.PermissionDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

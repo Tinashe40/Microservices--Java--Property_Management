@@ -2,12 +2,12 @@ package com.proveritus.userservice.passwordManager.service;
 
 import com.tinash.cloud.utility.dto.UserDto;
 import com.tinash.cloud.utility.exception.InvalidPasswordException;
-import com.tinash.cloud.utility.password.dto.ChangePasswordRequest;
+import com.proveritus.userservice.passwordManager.dto.ChangePasswordRequest;
 import com.tinash.cloud.utility.password.dto.PasswordPolicyDTO;
-import com.tinash.cloud.utility.password.dto.ResetPasswordRequest;
+import com.proveritus.userservice.passwordManager.dto.ResetPasswordRequest;
 import com.proveritus.userservice.userManager.dto.UpdateUserDto;
-import com.proveritus.userservice.passwordManager.domain.model.PasswordHistory;
-import com.proveritus.userservice.passwordManager.domain.repo.PasswordHistoryRepository;
+import com.proveritus.userservice.domain.model.user.PasswordHistory;
+import com.proveritus.userservice.domain.repository.PasswordHistoryRepository;
 import com.proveritus.userservice.passwordManager.validations.PasswordValidator;
 import com.proveritus.userservice.userManager.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

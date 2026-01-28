@@ -1,7 +1,7 @@
 package com.proveritus.userservice.passwordManager.service;
 
-import com.tinash.cloud.utility.password.dto.ChangePasswordRequest;
-import com.tinash.cloud.utility.password.dto.ResetPasswordRequest;
+import com.proveritus.userservice.passwordManager.dto.ChangePasswordRequest;
+import com.proveritus.userservice.passwordManager.dto.ResetPasswordRequest;
 
 public interface PasswordService {
 

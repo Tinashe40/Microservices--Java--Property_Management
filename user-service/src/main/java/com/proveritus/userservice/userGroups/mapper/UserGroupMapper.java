@@ -1,8 +1,8 @@
 package com.proveritus.userservice.userGroups.mapper;
 
 import com.tinash.cloud.utility.jpa.EntityDtoMapper;
-import com.proveritus.userservice.userGroups.domain.Permission;
-import com.proveritus.userservice.userGroups.domain.UserGroup;
+import com.proveritus.userservice.domain.model.permission.Permission;
+import com.proveritus.userservice.domain.model.usergroup.UserGroup;
 import com.proveritus.userservice.userGroups.dto.UserGroupDTO;
 import org.mapstruct.*;
 

@@ -1,4 +1,4 @@
-package com.tinash.cloud.utility.jpa.id;
+package com.proveritus.userservice.shared.domain.id;
 
 import com.github.f4b6a3.ulid.UlidCreator;
 import org.springframework.stereotype.Component;

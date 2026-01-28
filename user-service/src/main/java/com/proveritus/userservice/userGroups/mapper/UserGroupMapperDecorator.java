@@ -1,8 +1,8 @@
 package com.proveritus.userservice.userGroups.mapper;
 
-import com.proveritus.userservice.userGroups.domain.Permission;
-import com.proveritus.userservice.userGroups.domain.PermissionRepository;
-import com.proveritus.userservice.userGroups.domain.UserGroup;
+import com.proveritus.userservice.domain.model.permission.Permission;
+import com.proveritus.userservice.domain.repository.PermissionRepository;
+import com.proveritus.userservice.domain.model.usergroup.UserGroup;
 import com.proveritus.userservice.userGroups.dto.UserGroupDTO;
 import org.mapstruct.MappingTarget;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -38,7 +38,7 @@ public class UserGroupRestController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority(T(com.proveritus.cloudutility.security.Permissions.UserGroup).UPDATE)")
+    @PreAuthorize("hasAuthority(T(UserGroup).UPDATE)")
     public ResponseEntity<UserGroupDTO> updateUserGroup(@PathVariable Long id, @Valid @RequestBody UserGroupDTO userGroupDTO) {
         userGroupDTO.setId(id);
         return ResponseEntity.ok(userGroupService.update(userGroupDTO));

@@ -1,8 +1,8 @@
 package com.proveritus.userservice.userGroups.service.Impl;
 
 import com.tinash.cloud.utility.jpa.DomainServiceImpl;
-import com.proveritus.userservice.userGroups.domain.Permission;
-import com.proveritus.userservice.userGroups.domain.PermissionRepository;
+import com.proveritus.userservice.domain.model.permission.Permission;
+import com.proveritus.userservice.domain.repository.PermissionRepository;
 import com.proveritus.userservice.userGroups.dto.PermissionDTO;
 import com.proveritus.userservice.userGroups.mapper.PermissionMapper;
 import com.proveritus.userservice.userGroups.service.PermissionService;

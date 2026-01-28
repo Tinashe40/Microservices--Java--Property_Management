@@ -1,9 +1,11 @@
 package com.proveritus.userservice.domain.model.usergroup;
 
+import com.proveritus.userservice.shared.domain.id.HibernateIdGeneratorAdapter;
 import com.tinash.cloud.utility.jpa.BaseEntity;
 import com.proveritus.userservice.domain.model.permission.Permission;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,6 +19,14 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserGroup extends BaseEntity {
+    @Id
+    @GeneratedValue(generator = "ulid-generator")
+    @GenericGenerator(
+            name = "ulid-generator",
+            type = HibernateIdGeneratorAdapter.class,
+            parameters = @Parameter(name = "prefix", value = "GRP-")
+    )
+    private String id;
 
     @Column(unique = true, nullable = false)
     private String name;

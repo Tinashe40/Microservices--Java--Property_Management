@@ -1,13 +1,16 @@
 package com.proveritus.userservice.config;
 
+import com.tinash.cloud.utility.security.password.CustomPasswordEncoder;
 import com.tinash.cloud.utility.security.permission.Permissions;
-import com.proveritus.userservice.auth.domain.User;
-import com.proveritus.userservice.userManager.domain.UserRepository;
-import com.proveritus.userservice.userGroups.domain.*;
+import com.proveritus.userservice.domain.model.user.User;
+import com.proveritus.userservice.domain.repository.UserRepository;
+import com.proveritus.userservice.domain.model.permission.Permission;
+import com.proveritus.userservice.domain.model.usergroup.UserGroup;
+import com.proveritus.userservice.domain.repository.PermissionRepository;
+import com.proveritus.userservice.domain.repository.UserGroupRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -19,7 +22,7 @@ public class AdminUserSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final UserGroupRepository userGroupRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final CustomPasswordEncoder customPasswordEncoder;
     private final PermissionRepository permissionRepository;
 
     @Override
@@ -76,8 +79,6 @@ public class AdminUserSeeder implements CommandLineRunner {
 
         Set<Permission> allPermissions = new HashSet<>(permissionRepository.findAll());
 
-
-
         userGroupRepository.findByName("ADMIN").orElseGet(() -> {
 
             UserGroup adminUserGroup = new UserGroup("ADMIN");
@@ -125,24 +126,16 @@ public class AdminUserSeeder implements CommandLineRunner {
                 },
 
                 () -> {
-
-                    User adminUser = new User();
-
-                    adminUser.setFirstName("Tinashe");
-
-                    adminUser.setLastName("Mutero");
-                    adminUser.setUsername("Tinashe40");
-                    adminUser.setEmail("tinashemutero40@gmail.com");
-                    adminUser.setPhoneNumber("0785529900");
-                    adminUser.setPassword(passwordEncoder.encode("sudo0047"));
-                    adminUser.setUserGroups(Set.of(adminUserGroup));
-                    adminUser.setEnabled(true);
-                    adminUser.setAccountNonExpired(true);
-                    adminUser.setAccountNonLocked(true);
-
-                    adminUser.setCredentialsNonExpired(true);
-
-
+                    User adminUser = new User(
+                            "Tinashe40",
+                            "tinashemutero40@gmail.com",
+                            "sudo0047",
+                            "Tinashe",
+                            "Mutero",
+                            "0785529900",
+                            customPasswordEncoder
+                    );
+                    adminUser.assignUserGroup(adminUserGroup);
 
                     userRepository.save(adminUser);
 

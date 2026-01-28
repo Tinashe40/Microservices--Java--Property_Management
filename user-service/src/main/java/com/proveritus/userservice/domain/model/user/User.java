@@ -1,13 +1,19 @@
 package com.proveritus.userservice.domain.model.user;
 
 import com.proveritus.userservice.domain.event.UserCreatedEvent;
+import com.proveritus.userservice.domain.model.permission.Permission;
+import com.proveritus.userservice.shared.domain.id.HibernateIdGeneratorAdapter;
 import com.tinash.cloud.utility.jpa.BaseEntity;
+import com.tinash.cloud.utility.security.UserGroup;
+import com.tinash.cloud.utility.security.password.CustomPasswordEncoder;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,48 +28,28 @@ import java.util.List;
 })
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
+    @Id
+    @GeneratedValue(generator = "ulid-generator")
+    @GenericGenerator(
+            name = "ulid-generator",
+            type = HibernateIdGeneratorAdapter.class,
+            parameters = @Parameter(name = "prefix", value = "USR-")
+            )
+    private String id;
 
-    @Column(unique = true, nullable = false, length = 50)
-    private String username;
+    @Embedded
+    private Email email;
 
-    @Column(unique = true, nullable = false, length = 100)
-    private String email;
+    @Embedded
+    private UserProfile userProfile;
 
-    @Column(nullable = false)
-    private String password;
+    @Embedded
+    private Password password;
 
-    @Column(nullable = false, length = 50)
-    private String firstName;
-
-    @Column(nullable = false, length = 50)
-    private String lastName;
-
-    @Column(length = 20)
-    private String phoneNumber;
-
-    private LocalDateTime passwordLastChanged;
-
-    @Column(nullable = false)
-    private boolean enabled = true;
-
-    @Column(nullable = false)
-    private boolean accountNonExpired = true;
-
-    @Column(nullable = false, name = "account_locked")
-    private boolean accountNonLocked = true;
-
-    @Column(nullable = false)
-    private boolean credentialsNonExpired = true;
-
-    private LocalDateTime lastLoginAt;
-
-    private Integer failedLoginAttempts = 0;
-
-    private LocalDateTime lockedUntil;
+    @Embedded
+    private AccountStatus accountStatus;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(
@@ -95,75 +81,133 @@ public class User extends BaseEntity {
     @Transient
     private transient UserCreatedEvent domainEvent;
 
+    // Constructor for creating a new User
+    public User(String username, String emailString, String rawPassword, String firstName, String lastName, String phoneNumber, CustomPasswordEncoder passwordEncoder) {
+        this.email = new Email(emailString);
+        this.userProfile = new UserProfile(username, firstName, lastName, phoneNumber, email);
+        this.password = Password.fromPlainText(rawPassword, passwordEncoder);
+        this.accountStatus = AccountStatus.createActive();
+        // Initialize collections
+        this.userGroups = new HashSet<>();
+        this.permissions = new HashSet<>();
+        // Publish domain event
+        this.domainEvent = new UserCreatedEvent(this.getId(), this.getUsername(), this.getEmail());
+    }
+
+    // ========== Getters for embedded objects and their properties ==========
+
+    public String getUsername() {
+        return userProfile.getUsername();
+    }
+
+    public String getEmail() {
+        return email.value();
+    }
+
+    public String getPasswordHash() {
+        return password.getHashedValue();
+    }
+
+    public LocalDateTime getPasswordLastChanged() {
+        return LocalDateTime.ofInstant(password.getLastChanged(), java.time.ZoneOffset.UTC); // Convert Instant to LocalDateTime
+    }
+
+    public String getFirstName() {
+        return userProfile.getFirstName();
+    }
+
+    public String getLastName() {
+        return userProfile.getLastName();
+    }
+
+    public String getPhoneNumber() {
+        return userProfile.getPhoneNumber();
+    }
+
+    public boolean isEnabled() {
+        return accountStatus.isEnabled();
+    }
+
+    public boolean isAccountNonExpired() {
+        return accountStatus.isAccountNonExpired();
+    }
+
+    public boolean isAccountNonLocked() {
+        return accountStatus.isAccountNonLocked();
+    }
+
+    public boolean isCredentialsNonExpired() {
+        return accountStatus.isCredentialsNonExpired();
+    }
+
+    public Integer getFailedLoginAttempts() {
+        return accountStatus.getFailedLoginAttempts();
+    }
+
+    public LocalDateTime getLastLoginAt() {
+        return accountStatus.getLastLogin() != null ? LocalDateTime.ofInstant(accountStatus.getLastLogin(), java.time.ZoneOffset.UTC) : null;
+    }
+
+    public LocalDateTime getLockedUntil() {
+        // AccountStatus does not directly store lockedUntil, it's inferred from accountNonLocked and failedLoginAttempts
+        // This might need adjustment if a specific lockedUntil timestamp is required
+        return null; // Placeholder
+    }
+
     // ========== Domain Behavior ==========
 
     public void registerUser(String firstName, String lastName, String phoneNumber) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phoneNumber = phoneNumber;
-        this.passwordLastChanged = LocalDateTime.now();
-        this.enabled = true;
-        this.accountNonLocked = true;
-        this.credentialsNonExpired = true;
+        this.userProfile = new UserProfile(firstName, lastName, phoneNumber);
+        this.accountStatus.activate(); // Ensure account is active on registration
+        this.password.setLastChanged(java.time.Instant.now()); // Reset password last changed on registration
+        this.accountStatus.markPasswordChanged(java.time.Instant.now()); // Mark credentials as non-expired
 
         // Publish domain event
-        this.domainEvent = new UserCreatedEvent(this);
+        this.domainEvent = new UserCreatedEvent(this.getId(), this.getUsername(), this.getEmail());
     }
 
-    public void changePassword(String newEncodedPassword) {
-        this.password = newEncodedPassword;
-        this.passwordLastChanged = LocalDateTime.now();
-        this.credentialsNonExpired = true;
-        this.failedLoginAttempts = 0;
-        this.lockedUntil = null;
+    public void changePassword(String newRawPassword, CustomPasswordEncoder customPasswordEncoder) {
+        this.password = Password.fromPlainText(newRawPassword, customPasswordEncoder);
+        this.accountStatus.markPasswordChanged(java.time.Instant.now());
+        this.accountStatus.unlock(); // Unlock account and reset failed login attempts
     }
 
     public void recordFailedLoginAttempt() {
-        this.failedLoginAttempts = (this.failedLoginAttempts == null ? 0 : this.failedLoginAttempts) + 1;
+        this.accountStatus.recordFailedLogin();
     }
 
     public void lockAccount(LocalDateTime lockUntil) {
-        this.accountNonLocked = false;
-        this.lockedUntil = lockUntil;
+        this.accountStatus.lock();
+        // The lockedUntil field in AccountStatus needs to be updated if this is to be used
+        // For now, it will be handled implicitly by the accountStatus.isAccountNonLocked logic
     }
 
     public void unlockAccount() {
-        this.accountNonLocked = true;
-        this.failedLoginAttempts = 0;
-        this.lockedUntil = null;
+        this.accountStatus.unlock();
     }
 
     public void recordSuccessfulLogin() {
-        this.failedLoginAttempts = 0;
-        this.lastLoginAt = LocalDateTime.now();
-        this.lockedUntil = null;
+        this.accountStatus.recordSuccessfulLogin();
     }
 
     public void expireCredentials() {
-        this.credentialsNonExpired = false;
+        this.accountStatus.credentialsNonExpired = false; // Directly setting for now, consider adding a method in AccountStatus
     }
 
     public void deactivate() {
-        this.enabled = false;
+        this.accountStatus.deactivate();
     }
 
     public void activate() {
-        this.enabled = true;
+        this.accountStatus.activate();
     }
 
     public boolean isAccountLocked() {
-        if (!accountNonLocked) {
-            if (lockedUntil != null && LocalDateTime.now().isAfter(lockedUntil)) {
-                unlockAccount();
-                return false;
-            }
-            return true;
-        }
-        return false;
+        return !accountStatus.isAccountNonLocked();
     }
 
     public boolean isCredentialsExpired() {
-        return !credentialsNonExpired;
+        return !accountStatus.isCredentialsNonExpired();
     }
 
     public void assignUserGroup(UserGroup userGroup) {

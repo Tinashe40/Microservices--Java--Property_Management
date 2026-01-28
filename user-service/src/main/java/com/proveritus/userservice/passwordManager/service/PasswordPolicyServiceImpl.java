@@ -2,8 +2,8 @@ package com.proveritus.userservice.passwordManager.service;
 
 import com.tinash.cloud.utility.password.dto.PasswordPolicyDTO;
 import com.proveritus.userservice.passwordManager.mapper.PasswordPolicyMapper;
-import com.proveritus.userservice.passwordManager.domain.repo.PasswordPolicyRepository;
-import com.proveritus.userservice.passwordManager.domain.model.PasswordPolicy;
+import com.proveritus.userservice.domain.repository.PasswordPolicyRepository;
+import com.proveritus.userservice.domain.model.user.PasswordPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

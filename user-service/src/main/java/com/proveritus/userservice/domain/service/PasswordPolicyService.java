@@ -2,6 +2,7 @@ package com.proveritus.userservice.domain.service;
 
 import com.proveritus.userservice.domain.model.user.Password;
 import com.proveritus.userservice.domain.model.user.PasswordPolicy;
+import com.tinash.cloud.utility.jpa.BaseService;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Pattern;
@@ -10,7 +11,7 @@ import java.util.regex.Pattern;
  * Domain service for password policy enforcement.
  */
 @Service
-public class PasswordPolicyService {
+public class PasswordPolicyService extends BaseService<PasswordPolicy, String> {
 
     /**
      * Validates password against policy.

@@ -1,8 +1,8 @@
 package com.proveritus.userservice.userGroups.service.Impl;
 
 import com.tinash.cloud.utility.jpa.DomainServiceImpl;
-import com.proveritus.userservice.userGroups.domain.UserGroup;
-import com.proveritus.userservice.userGroups.domain.UserGroupRepository;
+import com.proveritus.userservice.domain.model.usergroup.UserGroup;
+import com.proveritus.userservice.domain.repository.UserGroupRepository;
 import com.proveritus.userservice.userGroups.dto.UserGroupDTO;
 import com.proveritus.userservice.userGroups.mapper.UserGroupMapper;
 import com.proveritus.userservice.userGroups.service.UserGroupService;

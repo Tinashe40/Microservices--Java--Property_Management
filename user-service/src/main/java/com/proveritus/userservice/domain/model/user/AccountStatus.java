@@ -2,15 +2,16 @@ package com.proveritus.userservice.domain.model.user;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
 
 import java.time.Instant;
 
 /**
  * Account status value object.
  */
+@Getter
 @Embeddable
 public class AccountStatus {
-
     @Column(name = "enabled", nullable = false)
     private boolean enabled;
 
@@ -76,28 +77,4 @@ public class AccountStatus {
         this.credentialsNonExpired = true;
     }
 
-    // Getters
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public boolean isAccountNonLocked() {
-        return accountNonLocked;
-    }
-
-    public boolean isAccountNonExpired() {
-        return accountNonExpired;
-    }
-
-    public boolean isCredentialsNonExpired() {
-        return credentialsNonExpired;
-    }
-
-    public int getFailedLoginAttempts() {
-        return failedLoginAttempts;
-    }
-
-    public Instant getLastLogin() {
-        return lastLogin;
-    }
 }

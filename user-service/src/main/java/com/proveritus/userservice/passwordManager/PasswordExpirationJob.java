@@ -1,8 +1,8 @@
 package com.proveritus.userservice.passwordManager;
 
 import com.proveritus.userservice.passwordManager.service.PasswordPolicyService;
-import com.proveritus.userservice.auth.domain.User;
-import com.proveritus.userservice.userManager.domain.UserRepository;
+import com.proveritus.userservice.domain.model.user.User;
+import com.proveritus.userservice.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -36,7 +36,7 @@ public class PasswordExpirationJob {
         for (User user : users) {
             if (user.getPasswordLastChanged() != null && user.isCredentialsNonExpired()) {
                 if (user.getPasswordLastChanged().plusDays(passwordExpirationDays).isBefore(LocalDateTime.now())) {
-                    user.setCredentialsNonExpired(false);
+                    user.expireCredentials(); // Use the domain method
                     userRepository.save(user);
                     log.info("Expired password for user: {}", user.getUsername());
                 }

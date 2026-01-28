@@ -1,4 +1,4 @@
-package com.tinash.cloud.utility.password.dto;
+package com.proveritus.userservice.passwordManager.dto;
 
 import com.tinash.cloud.utility.password.validations.PasswordConfirmation;
 import com.tinash.cloud.utility.password.validations.PasswordMatches;

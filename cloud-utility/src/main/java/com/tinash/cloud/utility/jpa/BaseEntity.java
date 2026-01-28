@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+
 /**
  * Base entity class with common fields for all entities.
  * Provides ID and auditing fields.
@@ -14,10 +17,7 @@ import lombok.Setter;
 @MappedSuperclass
 public abstract class BaseEntity extends Auditable {
 
-    @Id
-    private String id;
-
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
     @Version

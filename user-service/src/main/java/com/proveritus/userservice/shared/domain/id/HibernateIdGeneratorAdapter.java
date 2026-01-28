@@ -1,4 +1,4 @@
-package com.tinash.cloud.utility.jpa.id;
+package com.proveritus.userservice.shared.domain.id;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;

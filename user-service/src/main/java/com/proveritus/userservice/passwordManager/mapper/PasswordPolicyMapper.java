@@ -1,7 +1,7 @@
 package com.proveritus.userservice.passwordManager.mapper;
 
 import com.tinash.cloud.utility.password.dto.PasswordPolicyDTO;
-import com.proveritus.userservice.passwordManager.domain.model.PasswordPolicy;
+import com.proveritus.userservice.domain.model.user.PasswordPolicy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

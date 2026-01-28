@@ -1,7 +1,9 @@
 package com.proveritus.userservice.domain.model.user;
 
 import com.tinash.cloud.utility.core.domain.DomainEvent;
+import lombok.Getter;
 
+@Getter
 public class UserCreatedEvent extends DomainEvent {
     private final Long userId;
     private final String username;
@@ -14,15 +16,4 @@ public class UserCreatedEvent extends DomainEvent {
         this.email = email;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
 }

@@ -1,7 +1,7 @@
 package com.proveritus.userservice.userManager.service;
 
 import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
-import com.proveritus.userservice.auth.domain.User;
+import com.proveritus.userservice.domain.model.user.User;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -13,7 +13,8 @@ public interface UserService extends DomainService<User, SignUpRequest, UpdateUs
 
     UserDto getCurrentUser();
 
-    Optional<UserDto> getUserByUsername(String username);
+    Optional<UserDto> getUserByEmail(String email); // Changed to getUserByEmail as username is derived
+    Optional<UserDto> findByUsername(String username); // Added to handle derived username querying
 
     List<UserDto> getUsersByIds(List<Long> ids);
     boolean isCurrentUser(Long id);

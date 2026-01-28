@@ -6,6 +6,8 @@ import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
 import com.proveritus.userservice.auth.dto.responses.LoginResponse;
 import com.proveritus.userservice.jwt.UserTokenService;
 import com.proveritus.userservice.userManager.service.UserService;
+import com.tinash.cloud.utility.dto.common.UserDto;
+import com.tinash.cloud.utility.security.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

@@ -1,9 +1,9 @@
 package com.proveritus.userservice.userManager.api;
 
-import com.tinash.cloud.utility.dto.UserDto;
-import com.tinash.cloud.utility.password.dto.ResetPasswordRequest;
+import com.tinash.cloud.utility.dto.common.UserDto;
+import com.tinash.cloud.utility.exception.technical.ResourceNotFoundException;
+import com.proveritus.userservice.passwordManager.password.dto.ResetPasswordRequest;
 import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
-import com.proveritus.userservice.userManager.dto.*;
 import com.proveritus.userservice.userManager.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -64,7 +64,7 @@ public class UserRestController {
     })
     public ResponseEntity<UserDto> getUserByUsername(@Parameter(description = "Username of the user to retrieve") @RequestParam String username) {
         return ResponseEntity.ok(userService.getUserByUsername(username)
-                .orElseThrow(() -> new com.proveritus.cloudutility.exception.ResourceNotFoundException("User not found with username: " + username)));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username)));
     }
 
     @PostMapping("/by-ids")

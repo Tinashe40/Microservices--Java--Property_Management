@@ -5,29 +5,27 @@ import com.tinash.cloud.utility.dto.UserDto;
 import com.tinash.cloud.utility.exception.RegistrationException;
 import com.tinash.cloud.utility.exception.ResourceNotFoundException;
 import com.tinash.cloud.utility.jpa.DomainServiceImpl;
-import com.tinash.cloud.utility.password.dto.ResetPasswordRequest;
-import com.proveritus.userservice.auth.domain.User;
+import com.proveritus.userservice.passwordManager.password.dto.ResetPasswordRequest;
+import com.tinash.cloud.utility.security.password.CustomPasswordEncoder;
+import com.proveritus.userservice.domain.model.user.User;
 import com.proveritus.userservice.auth.dto.requests.SignUpRequest;
 import com.proveritus.userservice.email.EmailService;
 import com.proveritus.userservice.passwordManager.service.PasswordService;
-import com.proveritus.userservice.userGroups.domain.Permission;
-import com.proveritus.userservice.userGroups.domain.PermissionRepository;
-import com.proveritus.userservice.userManager.domain.UserRepository;
+import com.proveritus.userservice.domain.model.permission.Permission;
+import com.proveritus.userservice.domain.repository.PermissionRepository;
+import com.proveritus.userservice.domain.repository.UserRepository;
 import com.proveritus.userservice.userManager.dto.UpdateUserDto;
 import com.proveritus.userservice.userManager.mapper.UserMapper;
 import com.proveritus.userservice.userManager.service.UserService;
 import com.proveritus.userservice.userManager.validation.UserValidator;
-import com.proveritus.userservice.userGroups.domain.UserGroup;
-import com.proveritus.userservice.userGroups.domain.UserGroupRepository;
+import com.proveritus.userservice.domain.model.usergroup.UserGroup;
+import com.proveritus.userservice.domain.repository.UserGroupRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -40,23 +38,21 @@ import static com.proveritus.cloudutility.security.util.SecurityUtils.getCurrent
 @Service
 @Transactional
 public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, UpdateUserDto, UserDto> implements UserService {
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
     private final UserMapper userMapper;
     private final UserGroupRepository userGroupRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final CustomPasswordEncoder customPasswordEncoder;
     private final EmailService emailService;
     private final UserValidator userValidator;
     private final PermissionRepository permissionRepository;
     private final PasswordService passwordService;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, UserGroupRepository userGroupRepository, PasswordEncoder passwordEncoder, EmailService emailService, UserValidator userValidator, PermissionRepository permissionRepository, PasswordService passwordService) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, UserGroupRepository userGroupRepository, CustomPasswordEncoder customPasswordEncoder, EmailService emailService, UserValidator userValidator, PermissionRepository permissionRepository, PasswordService passwordService) {
         super(userRepository, userMapper);
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.userGroupRepository = userGroupRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.customPasswordEncoder = customPasswordEncoder;
         this.emailService = emailService;
         this.userValidator = userValidator;
         this.permissionRepository = permissionRepository;
@@ -71,14 +67,23 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
         log.debug("Request to register user : {}", signUpRequest.getUsername());
 
         try {
-            userValidator.validate(null, userRepository.existsByUsernameAndDeletedFalse(signUpRequest.getUsername()), userRepository.existsByEmailAndDeletedFalse(signUpRequest.getEmail()));
+            boolean usernameExists = userRepository.existsByUserProfile_UsernameAndDeletedFalse(
+                    signUpRequest.getUsername());
+            boolean emailExists = userRepository.existsByEmail_ValueAndDeletedFalse(signUpRequest.getEmail());
+            userValidator.validate(null, usernameExists, emailExists);
         } catch (IllegalArgumentException e) {
             throw new RegistrationException(e.getMessage());
         }
 
-        User user = userMapper.fromCreateDto(signUpRequest);
-        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-        user.setPasswordLastChanged(LocalDateTime.now());
+        User user = new User(
+                signUpRequest.getUsername(),
+                signUpRequest.getEmail(),
+                signUpRequest.getPassword(),
+                signUpRequest.getFirstName(),
+                signUpRequest.getLastName(),
+                signUpRequest.getPhoneNumber(),
+                customPasswordEncoder
+        );
         User savedUser = userRepository.save(user);
         log.debug("Saved user : {}", savedUser);
 
@@ -90,16 +95,25 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
     public UserDto getCurrentUser() {
         String username = getCurrentUsername()
                 .orElseThrow(() -> new ResourceNotFoundException("User not found in security context"));
-        return getUserByUsername(username)
+        return findByUsername(username) // Call the new findByUsername method
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users", key = "#email") // Changed key to email as username is derived
+    public Optional<UserDto> getUserByEmail(String email) {
+        log.debug("Request to get User by email : {}", email);
+        return userRepository.findByEmail_ValueAndDeletedFalse(email).map(userMapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "users", key = "#username")
-    public Optional<UserDto> getUserByUsername(String username) {
-        log.debug("Request to get User : {}", username);
-        return userRepository.findByUsernameAndDeletedFalse(username).map(userMapper::toDto);
+    public Optional<UserDto> findByUsername(String username) {
+        log.debug("Request to get User by username : {}", username);
+        return userRepository.findByUserProfile_UsernameAndDeletedFalse(username)
+                .map(userMapper::toDto);
     }
 
     @Override
@@ -140,7 +154,8 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
         if (userGroups.size() != groupNames.size()) {
             log.warn("Could not find all groups for user {}", userId);
         }
-        user.setUserGroups(userGroups);
+        user.getUserGroups().clear(); // Clear existing groups
+        userGroups.forEach(user::assignUserGroup); // Use the domain method
 
         User result = userRepository.save(user);
         log.debug("Updated user groups : {}", result);
@@ -160,7 +175,7 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
             log.warn("Could not find all permissions for user {}", userId);
         }
 
-        user.getPermissions().addAll(permissions);
+        permissions.forEach(user::assignPermission); // Use the domain method
         User result = userRepository.save(user);
         log.debug("Updated user permissions : {}", result);
 
@@ -174,11 +189,9 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
         log.debug("Request to remove permissions from user : {}", userId);
         User user = findEntityById(userId);
 
-        Set<Permission> permissionsToRemove = user.getPermissions().stream()
-                .filter(permission -> permissionNames.contains(permission.getName()))
-                .collect(Collectors.toSet());
+        Set<Permission> permissionsToRemove = permissionRepository.findByNameIn(permissionNames);
+        permissionsToRemove.forEach(user::removePermission); // Use the domain method
 
-        user.getPermissions().removeAll(permissionsToRemove);
         User result = userRepository.save(user);
         log.debug("Updated user permissions : {}", result);
 
@@ -191,7 +204,7 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
     public void deactivateUser(Long id) {
         log.debug("Request to deactivate User : {}", id);
         User user = findEntityById(id);
-        user.setEnabled(false);
+        user.deactivate(); // Use the domain method
         userRepository.save(user);
     }
 
@@ -201,14 +214,16 @@ public class UserServiceImpl extends DomainServiceImpl<User, SignUpRequest, Upda
     public void activateUser(Long id) {
         log.debug("Request to activate User : {}", id);
         User user = findEntityById(id);
-        user.setEnabled(true);
+        user.activate(); // Use the domain method
         userRepository.save(user);
     }
 
     @Override
     @Auditable(action = "RESET_PASSWORD", entity = "User")
     public void resetPassword(Long id, ResetPasswordRequest request) {
-        passwordService.adminResetPassword(id, request);
+        User user = findEntityById(id);
+        user.changePassword(request.getNewPassword(), customPasswordEncoder); // Use the domain method
+        userRepository.save(user); // Save the user after password reset
     }
 
     @Override

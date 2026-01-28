@@ -1,4 +1,4 @@
-package com.tinash.cloud.utility.password.dto;
+package com.proveritus.userservice.passwordManager.dto;
 
 import lombok.Data;
 
