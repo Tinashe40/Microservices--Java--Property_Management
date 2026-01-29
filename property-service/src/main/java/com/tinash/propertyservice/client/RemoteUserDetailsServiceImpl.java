@@ -1,0 +1,19 @@
+package com.tinash.propertyservice.client;
+
+
+import com.tinash.cloud.utility.dto.common.UserDto;
+import com.tinash.cloud.utility.security.RemoteUserDetailsService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class RemoteUserDetailsServiceImpl extends RemoteUserDetailsService {
+
+    private final UserClient userClient;
+
+    @Override
+    public UserDto getUserByUsername(String username) {
+        return userClient.getUserByUsername(username);
+    }
+}

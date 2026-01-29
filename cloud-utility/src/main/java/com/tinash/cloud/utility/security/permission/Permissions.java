@@ -27,6 +27,12 @@ public final class Permissions {
         private LeasingAgent() {}
         public static final String READ = "leasing_agent:read";
         public static final String UPDATE_OCCUPANCY = "leasing_agent:update_occupancy";
+        public static final String WRITE = "leasing_agent:write";
+        public static final String DELETE_OCCUPANCY = "leasing_agent:delete";
+        public static final String COUNT_OCCUPANCY = "leasing_agent:count";
+        public static final String READ_OCCUPANCY = "leasing_agent:read";
+        public static final String CREATE_OCCUPANCY = "leasing_agent:create";
+
     }
 
     public static final class MaintenanceStaff {
@@ -45,6 +51,7 @@ public final class Permissions {
         public static final String READ = "floor:read";
         public static final String UPDATE = "floor:update";
         public static final String DELETE = "floor:delete";
+        public static final String COUNT_READ = "floor:count:read";
     }
 
     public static final class Unit {
@@ -53,6 +60,7 @@ public final class Permissions {
         public static final String READ = "unit:read";
         public static final String UPDATE = "unit:update";
         public static final String DELETE = "unit:delete";
+        public static final String COUNT_READ = "unit:count:read";
     }
 
     public static final class User {
@@ -109,6 +117,8 @@ public final class Permissions {
         public static final String READ = "password:read";
         public static final String UPDATE = "password:update";
         public static final String RESET_PASSWORD = "password:reset-password";
+        public static final String DELETE_PASSWORD = "password:delete-password";
+
 
     }
 }

@@ -18,7 +18,7 @@
 2025-12-16 16:48:28 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
 2025-12-16 16:48:28 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@7e4c0bc7
 2025-12-16 16:48:28 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2025-12-16 16:48:29 [main] INFO  o.h.m.i.EntityInstantiatorPojoStandard - HHH000182: No default (no-argument) constructor for class: com.proveritus.propertyservice.property.domain.Property (class must be instantiated by Interceptor)
+2025-12-16 16:48:29 [main] INFO  o.h.m.i.EntityInstantiatorPojoStandard - HHH000182: No default (no-argument) constructor for class: domain.property.com.tinash.propertyservice.Property (class must be instantiated by Interceptor)
 2025-12-16 16:48:29 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
 2025-12-16 16:48:29 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
 2025-12-16 16:48:29 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
@@ -102,7 +102,7 @@
 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:335)
 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1363)
 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1352)
-	at com.proveritus.propertyservice.PropertyServiceApplication.main(PropertyServiceApplication.java:45)
+	at com.tinash.propertyservice.PropertyServiceApplication.main(PropertyServiceApplication.java:45)
 Caused by: org.apache.hc.client5.http.HttpHostConnectException: Connect to http://localhost:8761 [localhost/127.0.0.1] failed: Connection refused
 	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
 	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:682)
@@ -199,7 +199,7 @@ Caused by: org.apache.hc.client5.http.HttpHostConnectException: Connect to http:
 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:335)
 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1363)
 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1352)
-	at com.proveritus.propertyservice.PropertyServiceApplication.main(PropertyServiceApplication.java:45)
+	at com.tinash.propertyservice.PropertyServiceApplication.main(PropertyServiceApplication.java:45)
 
 2025-12-16 16:48:34 [main] INFO  c.netflix.discovery.DiscoveryClient - Initial registry fetch from primary servers failed
 2025-12-16 16:48:34 [main] WARN  c.netflix.discovery.DiscoveryClient - Using default backup registry implementation which does not do anything.
@@ -4268,7 +4268,7 @@ com.netflix.discovery.shared.transport.TransportException: Cannot execute reques
 2025-12-16 17:06:03 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
 2025-12-16 17:06:04 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@787b7796
 2025-12-16 17:06:04 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2025-12-16 17:06:04 [main] INFO  o.h.m.i.EntityInstantiatorPojoStandard - HHH000182: No default (no-argument) constructor for class: com.proveritus.propertyservice.property.domain.Property (class must be instantiated by Interceptor)
+2025-12-16 17:06:04 [main] INFO  o.h.m.i.EntityInstantiatorPojoStandard - HHH000182: No default (no-argument) constructor for class: domain.property.com.tinash.propertyservice.Property (class must be instantiated by Interceptor)
 2025-12-16 17:06:05 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
 2025-12-16 17:06:05 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
 2025-12-16 17:06:05 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
